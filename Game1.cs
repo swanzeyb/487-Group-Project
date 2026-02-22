@@ -3,6 +3,8 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Core;
 using Entities;
+using System;
+using System.Collections.Generic;
 
 namespace _487_Group_Project;
 
@@ -15,8 +17,13 @@ public class Game1 : Game
     private SimpleDrawer _drawer = null!;
     private InputState _input = null!;
 
-    // player
+    // Entities
     private Player _player = null!;
+    private List<Enemy> _enemies = new List<Enemy>();
+
+    // Spawn logic
+    private double _spawnTimer = 0;
+    private Random rand = new Random();
 
     public Game1()
     {
@@ -49,6 +56,24 @@ public class Game1 : Game
         
         _player.Update(gameTime);
 
+        _spawnTimer += gameTime.ElapsedGameTime.TotalSeconds;
+        if (_spawnTimer >= 1.5) // Spawns enemy in 1.5s intervals.
+        {
+            _spawnTimer = 0;
+            SpawnRandomEnemy();
+        }
+
+        // Iterate backwards to remove dead enemies from the list.
+        for (int i = _enemies.Count -1; i >= 0; i--)
+        {
+            _enemies[i].Update(gameTime);
+
+            if (!_enemies[i].IsAlive)
+            {
+                _enemies.RemoveAt(i);
+            }
+        }
+
         base.Update(gameTime);
     }
 
@@ -63,8 +88,31 @@ public class Game1 : Game
         // Draw player
         _player.Draw(_spriteBatch);
 
+        // Draw enemies.
+        foreach (var enemy in _enemies)
+        {
+            enemy.Draw(_spriteBatch);
+        }
+
         _spriteBatch.End();
 
         base.Draw(gameTime);
+    }
+
+    private void SpawnRandomEnemy()
+    {
+        float spawnX = rand.Next(GameConfig.Playfield.Left + 20, GameConfig.Playfield.Right - 20);
+        Vector2 spawnPos = new Vector2(spawnX, GameConfig.Playfield.Top - 50);
+
+        EnemyType randomType = (EnemyType)rand.Next(0, 4);
+
+        Vector2 velocity = new Vector2(0, 100f);
+
+        if (randomType == EnemyType.MidBoss || randomType == EnemyType.FinalBoss)
+        {
+            velocity.Y = 50f;
+        }
+
+        _enemies.Add(new Enemy(_drawer, randomType, spawnPos, velocity));
     }
 }
