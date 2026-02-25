@@ -1,0 +1,196 @@
+{
+  "phases": [
+    {
+      "id": "phase1",
+      "name": "Grunt Rush",
+      "waves": [
+        {
+          "enemyType": "Grunt",
+          "count": 5,
+          "spawnIntervalMs": 1500,
+          "startDelayMs": 0,
+          "spawnXMin": 100,
+          "spawnXMax": 860,
+          "spawnY": -30,
+          "velocityX": 0,
+          "velocityY": 100,
+          "advanceCondition": "timer",
+          "advanceCooldownSec": 1.0,
+          "movementPattern": "linear"
+        },
+        {
+          "enemyType": "Grunt",
+          "count": 6,
+          "spawnIntervalMs": 1200,
+          "startDelayMs": 0,
+          "spawnXMin": 100,
+          "spawnXMax": 860,
+          "spawnY": -30,
+          "velocityX": 0,
+          "velocityY": 110,
+          "advanceCondition": "timer",
+          "advanceCooldownSec": 1.0,
+          "movementPattern": "linear"
+        },
+        {
+          "enemyType": "Grunt",
+          "count": 4,
+          "spawnIntervalMs": 1000,
+          "startDelayMs": 0,
+          "spawnXMin": 100,
+          "spawnXMax": 860,
+          "spawnY": -30,
+          "velocityX": 0,
+          "velocityY": 120,
+          "advanceCondition": "timer",
+          "advanceCooldownSec": 2.0,
+          "movementPattern": "linear"
+        }
+      ]
+    },
+    {
+      "id": "phase2",
+      "name": "Mixed Grunts",
+      "waves": [
+        {
+          "enemyType": "Grunt",
+          "count": 4,
+          "spawnIntervalMs": 1200,
+          "startDelayMs": 0,
+          "spawnXMin": 100,
+          "spawnXMax": 860,
+          "spawnY": -30,
+          "velocityX": 0,
+          "velocityY": 110,
+          "advanceCondition": "timer",
+          "advanceCooldownSec": 0.5,
+          "movementPattern": "linear"
+        },
+        {
+          "enemyType": "BetterGrunt",
+          "count": 3,
+          "spawnIntervalMs": 1500,
+          "startDelayMs": 500,
+          "spawnXMin": 150,
+          "spawnXMax": 810,
+          "spawnY": -40,
+          "velocityX": 0,
+          "velocityY": 90,
+          "advanceCondition": "timer",
+          "advanceCooldownSec": 1.0,
+          "movementPattern": "linear"
+        },
+        {
+          "enemyType": "Grunt",
+          "count": 5,
+          "spawnIntervalMs": 1000,
+          "startDelayMs": 0,
+          "spawnXMin": 100,
+          "spawnXMax": 860,
+          "spawnY": -30,
+          "velocityX": 0,
+          "velocityY": 120,
+          "advanceCondition": "timer",
+          "advanceCooldownSec": 0.5,
+          "movementPattern": "linear"
+        },
+        {
+          "enemyType": "BetterGrunt",
+          "count": 4,
+          "spawnIntervalMs": 1200,
+          "startDelayMs": 0,
+          "spawnXMin": 150,
+          "spawnXMax": 810,
+          "spawnY": -40,
+          "velocityX": 0,
+          "velocityY": 95,
+          "advanceCondition": "timer",
+          "advanceCooldownSec": 2.0,
+          "movementPattern": "linear"
+        }
+      ]
+    },
+    {
+      "id": "phase3",
+      "name": "Mid Boss",
+      "waves": [
+        {
+          "enemyType": "Grunt",
+          "count": 6,
+          "spawnIntervalMs": 1000,
+          "startDelayMs": 0,
+          "spawnXMin": 100,
+          "spawnXMax": 860,
+          "spawnY": -30,
+          "velocityX": 0,
+          "velocityY": 110,
+          "advanceCondition": "allKilled",
+          "advanceCooldownSec": 0,
+          "movementPattern": "linear"
+        },
+        {
+          "enemyType": "MidBoss",
+          "count": 1,
+          "spawnIntervalMs": 0,
+          "startDelayMs": 1000,
+          "spawnXMin": 480,
+          "spawnXMax": 480,
+          "spawnY": -60,
+          "velocityX": 0,
+          "velocityY": 50,
+          "advanceCondition": "allKilled",
+          "advanceCooldownSec": 0,
+          "movementPattern": "linear"
+        }
+      ]
+    },
+    {
+      "id": "phase4",
+      "name": "Final Boss",
+      "waves": [
+        {
+          "enemyType": "Grunt",
+          "count": 5,
+          "spawnIntervalMs": 900,
+          "startDelayMs": 0,
+          "spawnXMin": 100,
+          "spawnXMax": 860,
+          "spawnY": -30,
+          "velocityX": 0,
+          "velocityY": 130,
+          "advanceCondition": "allKilled",
+          "advanceCooldownSec": 0,
+          "movementPattern": "linear"
+        },
+        {
+          "enemyType": "BetterGrunt",
+          "count": 3,
+          "spawnIntervalMs": 1200,
+          "startDelayMs": 0,
+          "spawnXMin": 150,
+          "spawnXMax": 810,
+          "spawnY": -40,
+          "velocityX": 0,
+          "velocityY": 100,
+          "advanceCondition": "allKilled",
+          "advanceCooldownSec": 0,
+          "movementPattern": "linear"
+        },
+        {
+          "enemyType": "FinalBoss",
+          "count": 1,
+          "spawnIntervalMs": 0,
+          "startDelayMs": 1500,
+          "spawnXMin": 480,
+          "spawnXMax": 480,
+          "spawnY": -120,
+          "velocityX": 0,
+          "velocityY": 25,
+          "advanceCondition": "allKilled",
+          "advanceCooldownSec": 0,
+          "movementPattern": "linear"
+        }
+      ]
+    }
+  ]
+}
