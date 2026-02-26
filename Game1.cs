@@ -2,12 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Core;
-using Entities;
-using Level;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+using Screens;
 
 namespace _487_Group_Project;
 
@@ -16,16 +11,26 @@ public class Game1 : Game
     private GraphicsDeviceManager _graphics = null!;
     private SpriteBatch _spriteBatch = null!;
 
-    // Core stuff
+    // Core systems
     private SimpleDrawer _drawer = null!;
     private InputState _input = null!;
+    private KeyBindings _keyBindings = null!;
+    private ScoreManager _scoreManager = null!;
 
-    // Entities
-    private Player _player = null!;
-    private List<Enemy> _enemies = new List<Enemy>();
+    // Screen management
+    private ScreenManager _screenManager = null!;
+    private IScreen _activeScreen = null!;
 
-    // Level system (replaces old hardcoded phase logic)
-    private LevelManager _levelManager = null!;
+    // Screens
+    private MenuScreen _menuScreen = null!;
+    private PlayingScreen _playingScreen = null!;
+    private PauseScreen _pauseScreen = null!;
+    private GameOverScreen _gameOverScreen = null!;
+    private VictoryScreen _victoryScreen = null!;
+    private KeyConfigScreen _keyConfigScreen = null!;
+
+    // Track where KeyConfig was entered from
+    private GameState _keyConfigReturnState = GameState.Menu;
 
     public Game1()
     {
@@ -47,40 +52,58 @@ public class Game1 : Game
         _spriteBatch = new SpriteBatch(GraphicsDevice);
         _drawer = new SimpleDrawer(GraphicsDevice);
         _input = new InputState();
-        _player = new Player(_drawer, _input);
+        _keyBindings = new KeyBindings();
+        _scoreManager = new ScoreManager();
+        _screenManager = new ScreenManager();
 
-        // Load the level from JSON
-        _levelManager = new LevelManager();
-        _levelManager.OnSpawnEnemy += HandleSpawnEnemy;
-        _levelManager.OnPhaseChanged += HandlePhaseChanged;
+        // Load fonts
+        var defaultFont = Content.Load<SpriteFont>("Fonts/DefaultFont");
+        var titleFont = Content.Load<SpriteFont>("Fonts/TitleFont");
 
-        string levelPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Content", "Levels", "stage1.json");
-        _levelManager.LoadLevel(levelPath);
+        // Create screens
+        _menuScreen = new MenuScreen(titleFont, defaultFont);
+        _menuScreen.OnStartGame = () => TransitionTo(GameState.Playing);
+        _menuScreen.OnKeyConfig = () => OpenKeyConfig(GameState.Menu);
+        _menuScreen.OnQuit = () => Exit();
+
+        _playingScreen = new PlayingScreen(_drawer, _input, _keyBindings, _scoreManager, defaultFont);
+        _playingScreen.OnPause = () => TransitionTo(GameState.Paused);
+        _playingScreen.OnGameOver = () =>
+        {
+            _gameOverScreen.SetScore(_playingScreen.CurrentScore);
+            TransitionTo(GameState.GameOver);
+        };
+        _playingScreen.OnVictory = () =>
+        {
+            _victoryScreen.SetScore(_playingScreen.CurrentScore);
+            TransitionTo(GameState.Victory);
+        };
+
+        _pauseScreen = new PauseScreen(titleFont, defaultFont);
+        _pauseScreen.OnResume = () => TransitionTo(GameState.Playing);
+        _pauseScreen.OnKeyConfig = () => OpenKeyConfig(GameState.Paused);
+        _pauseScreen.OnQuitToMenu = () => TransitionTo(GameState.Menu);
+
+        _gameOverScreen = new GameOverScreen(titleFont, defaultFont);
+        _gameOverScreen.OnRetry = () => TransitionTo(GameState.Playing);
+        _gameOverScreen.OnQuitToMenu = () => TransitionTo(GameState.Menu);
+
+        _victoryScreen = new VictoryScreen(titleFont, defaultFont);
+        _victoryScreen.OnRetry = () => TransitionTo(GameState.Playing);
+        _victoryScreen.OnQuitToMenu = () => TransitionTo(GameState.Menu);
+
+        _keyConfigScreen = new KeyConfigScreen(_keyBindings, titleFont, defaultFont);
+        _keyConfigScreen.OnBack = () => ReturnFromKeyConfig();
+
+        // Start on menu
+        _activeScreen = _menuScreen;
+        _activeScreen.OnEnter();
     }
 
     protected override void Update(GameTime gameTime)
     {
         _input.Update();
-        if (_input.Down(Keys.Escape))
-            Exit();
-
-        _player.Update(gameTime);
-
-        // Drive wave/phase progression — pass living enemy count for "allKilled" conditions
-        int livingCount = _enemies.Count(e => e.IsAlive);
-        _levelManager.Update(gameTime, livingCount);
-
-        // Iterate backwards to remove dead enemies from the list.
-        for (int i = _enemies.Count - 1; i >= 0; i--)
-        {
-            _enemies[i].Update(gameTime);
-
-            if (!_enemies[i].IsAlive)
-            {
-                _enemies.RemoveAt(i);
-            }
-        }
-
+        _activeScreen.Update(gameTime, _input);
         base.Update(gameTime);
     }
 
@@ -89,33 +112,52 @@ public class Game1 : Game
         GraphicsDevice.Clear(Color.Black);
         _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
 
-        // Draw playfield boundary
-        _drawer.DrawRectOutline(_spriteBatch, GameConfig.Playfield, thickness: 3, color: Color.DarkGray);
-
-        // Draw player
-        _player.Draw(_spriteBatch);
-
-        // Draw enemies.
-        foreach (var enemy in _enemies)
+        // If paused, draw the playing screen frozen underneath
+        if (_screenManager.CurrentState == GameState.Paused)
         {
-            enemy.Draw(_spriteBatch);
+            _playingScreen.Draw(_spriteBatch, _drawer);
         }
 
-        _spriteBatch.End();
+        _activeScreen.Draw(_spriteBatch, _drawer);
 
+        _spriteBatch.End();
         base.Draw(gameTime);
     }
 
-    // ── Level event handlers ────────────────────────────────
+    // ── Helpers ─────────────────────────────────────────────
 
-    private void HandleSpawnEnemy(object sender, SpawnEnemyEventArgs e)
+    private void TransitionTo(GameState newState)
     {
-        _enemies.Add(EnemyFactory.Create(_drawer, e.EnemyType, e.Position, e.Velocity));
+        if (!_screenManager.TransitionTo(newState))
+            return;
+
+        _activeScreen.OnExit();
+        _activeScreen = GetScreen(newState);
+        _activeScreen.OnEnter();
     }
 
-    private void HandlePhaseChanged(object sender, int newPhaseIndex)
+    private IScreen GetScreen(GameState state) => state switch
     {
-        // Hook for future UI updates, screen-clear effects, etc.
-        System.Diagnostics.Debug.WriteLine($"Phase changed to index {newPhaseIndex}: {_levelManager.CurrentPhaseName}");
+        GameState.Menu => _menuScreen,
+        GameState.Playing => _playingScreen,
+        GameState.Paused => _pauseScreen,
+        GameState.GameOver => _gameOverScreen,
+        GameState.Victory => _victoryScreen,
+        _ => _menuScreen
+    };
+
+    private void OpenKeyConfig(GameState returnState)
+    {
+        _keyConfigReturnState = returnState;
+        _activeScreen.OnExit();
+        _activeScreen = _keyConfigScreen;
+        _activeScreen.OnEnter();
+    }
+
+    private void ReturnFromKeyConfig()
+    {
+        _activeScreen.OnExit();
+        _activeScreen = GetScreen(_keyConfigReturnState);
+        _activeScreen.OnEnter();
     }
 }
