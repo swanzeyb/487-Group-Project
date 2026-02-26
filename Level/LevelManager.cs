@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using Core;
 using Entities;
 using Microsoft.Xna.Framework;
 
@@ -191,6 +192,8 @@ public class LevelManager
             type = EnemyType.Grunt;
 
         float x = _rand.NextSingle() * (wave.SpawnXMax - wave.SpawnXMin) + wave.SpawnXMin;
+        // Clamp X to playfield bounds
+        x = Math.Clamp(x, GameConfig.Playfield.Left, GameConfig.Playfield.Right);
         var pos = new Vector2(x, wave.SpawnY);
         var vel = new Vector2(wave.VelocityX, wave.VelocityY);
 
