@@ -8,10 +8,17 @@ public static class GameConfig
     public const int ScreenWidth = 960;
     public const int ScreenHeight = 540;
 
-    // Playfield bounds (player movement confined area)
-    // adjust to match UI panel thats added later
+    // Playfield bounds (Touhou-style: playfield on left, panel on right)
+    public const int PlayfieldLeft = 20;
+    public const int PlayfieldTop = 20;
+    public const int PlayfieldWidth = 620;
+    public const int PlayfieldHeight = 500;
 
-    public static readonly Rectangle Playfield = new Rectangle(40, 20, ScreenWidth - 80, ScreenHeight - 40);
+    public static readonly Rectangle Playfield = new Rectangle(PlayfieldLeft, PlayfieldTop, PlayfieldWidth, PlayfieldHeight);
+
+    // Right-side HUD panel
+    public const int PanelX = 660;
+    public const int PanelWidth = 300;
 
     public const float PlayerSpeedNormal = 260f;
     public const float PlayerSpeedSlow = 130f;
