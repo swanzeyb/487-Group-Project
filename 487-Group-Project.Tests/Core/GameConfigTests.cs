@@ -20,9 +20,9 @@ public class GameConfigTests
     }
 
     [Test]
-    public void PanelX_PlusPanelWidth_EqualsScreenWidth()
+    public void PanelX_PlusPanelWidth_FitsWithinScreenWidth()
     {
-        Assert.That(GameConfig.PanelX + GameConfig.PanelWidth, Is.EqualTo(GameConfig.ScreenWidth));
+        Assert.That(GameConfig.PanelX + GameConfig.PanelWidth, Is.LessThanOrEqualTo(GameConfig.ScreenWidth));
     }
 
     [Test]

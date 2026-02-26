@@ -16,9 +16,9 @@ public static class GameConfig
 
     public static readonly Rectangle Playfield = new Rectangle(PlayfieldLeft, PlayfieldTop, PlayfieldWidth, PlayfieldHeight);
 
-    // Right-side HUD panel
+    // Right-side HUD panel (20px padding on right edge)
     public const int PanelX = 660;
-    public const int PanelWidth = 300;
+    public const int PanelWidth = 280;
 
     public const float PlayerSpeedNormal = 260f;
     public const float PlayerSpeedSlow = 130f;
