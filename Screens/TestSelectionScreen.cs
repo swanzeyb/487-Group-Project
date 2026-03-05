@@ -89,6 +89,12 @@ public class TestSelectionScreen : IScreen
             spriteBatch.DrawString(_defaultFont, text, pos, color);
         }
 
+        // Selected enemy type display
+        string selectedEnemy = $"Selected Enemy: {GameConfig.SelectedEnemyType}";
+        var selectedSize = _defaultFont.MeasureString(selectedEnemy);
+        var selectedPos = new Vector2((GameConfig.ScreenWidth - selectedSize.X) / 2, 410);
+        spriteBatch.DrawString(_defaultFont, selectedEnemy, selectedPos, Color.Cyan);
+
         // Instructions
         string instructions = "Arrow Keys to navigate, Enter to select";
         var instrSize = _defaultFont.MeasureString(instructions);
