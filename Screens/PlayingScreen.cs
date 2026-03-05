@@ -112,16 +112,16 @@ public class PlayingScreen : IScreen
             if (_player.Bounds.Intersects(bullet.Bounds))
             {
                 // Player hit, for now just log or handle damage
-                // Since player has no HP yet, perhaps trigger game over
+                // Since player has no HP yet, trigger game over instead
                 OnGameOver?.Invoke();
                 return;
             }
         }
 
-        // Check collisions between lasers and player
+        // Check collisions between lasers and player (using distance-to-segment test)
         foreach (var laser in _bulletManager.ActiveLasers)
         {
-            if (laser.IsActive && _player.Bounds.Intersects(laser.Bounds))
+            if (laser.IsActive && LaserIntersectsPlayer(laser, _player.Bounds))
             {
                 OnGameOver?.Invoke();
                 return;
@@ -176,6 +176,29 @@ public class PlayingScreen : IScreen
     private void HandleSpawnEnemy(object sender, SpawnEnemyEventArgs e)
     {
         _enemies.Add(EnemyFactory.Create(_drawer, e.EnemyType, e.Position, e.Velocity, _bulletManager));
+    }
+
+    // helper used during Update for more accurate laser collision tests
+    private static bool LaserIntersectsPlayer(Laser laser, Rectangle playerBounds)
+    {
+        // treat player as a circle for simplicity
+        Vector2 playerCenter = playerBounds.Center.ToVector2();
+        float playerRadius = Math.Min(playerBounds.Width, playerBounds.Height) / 2f;
+        Vector2 start = laser.StartPosition;
+        Vector2 end = laser.EndPosition;
+        Vector2 seg = end - start;
+        float lenSq = seg.LengthSquared();
+        if (lenSq < 0.0001f)
+        {
+            // degenerate segment, just compare to start point
+            return Vector2.Distance(playerCenter, start) <= Laser.BeamThickness / 2 + playerRadius;
+        }
+        // project player centre onto segment
+        float t = Vector2.Dot(playerCenter - start, seg) / lenSq;
+        t = MathHelper.Clamp(t, 0f, 1f);
+        Vector2 closest = start + seg * t;
+        float distance = Vector2.Distance(playerCenter, closest);
+        return distance <= Laser.BeamThickness / 2 + playerRadius;
     }
 
     private void HandlePhaseChanged(object sender, int newPhaseIndex)

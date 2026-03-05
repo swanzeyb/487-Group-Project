@@ -44,7 +44,7 @@ public sealed class SimpleDrawer
         }
     }
 
-    public void DrawLine(SpriteBatch sb, Vector2 a, Vector2 b, Color color, int thickness = 2)
+    public void DrawLine(SpriteBatch sb, Vector2 a, Vector2 b, Color color, float thickness)
     {
         var d = b - a;
         float len = d.Length();
