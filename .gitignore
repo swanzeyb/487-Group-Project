@@ -1,0 +1,25 @@
+# Build outputs
+bin/
+obj/
+
+# MonoGame content build intermediates
+Content/bin/
+Content/obj/
+
+# IDE / editor files
+.vs/
+.vscode/
+*.user
+*.suo
+*.csproj.user
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Rider
+.idea/
+
+# Misc
+*.swp
+*~
