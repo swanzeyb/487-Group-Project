@@ -62,11 +62,11 @@ public class Enemy:IGameEntity
         float dt = (float)gametime.ElapsedGameTime.TotalSeconds;
         Position += _velocity * dt;
 
-        // Enemy will despawn if they move outside the playfield.
-        if (Position.Y > GameConfig.ScreenHeight + 100 ||
-            Position.Y < -100 ||
-            Position.X < -100 ||
-            Position.X > GameConfig.ScreenWidth + 100)
+        // Enemy will despawn if they move outside the playfield bounds.
+        if (Position.Y > GameConfig.Playfield.Bottom + 100 ||
+            Position.Y < GameConfig.Playfield.Top - 100 ||
+            Position.X < GameConfig.Playfield.Left - 100 ||
+            Position.X > GameConfig.Playfield.Right + 100)
         {
             IsAlive = false;
         }

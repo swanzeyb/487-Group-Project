@@ -51,11 +51,11 @@ public class WaveDefinition
 
     /// <summary>Minimum X position for random spawn (playfield-relative).</summary>
     [JsonPropertyName("spawnXMin")]
-    public float SpawnXMin { get; set; } = 60;
+    public float SpawnXMin { get; set; } = 40;
 
     /// <summary>Maximum X position for random spawn (playfield-relative).</summary>
     [JsonPropertyName("spawnXMax")]
-    public float SpawnXMax { get; set; } = 900;
+    public float SpawnXMax { get; set; } = 620;
 
     /// <summary>Y position where enemies appear.</summary>
     [JsonPropertyName("spawnY")]
