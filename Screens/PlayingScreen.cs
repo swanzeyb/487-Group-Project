@@ -21,6 +21,7 @@ public class PlayingScreen : IScreen
 
     private Player _player;
     private List<Enemy> _enemies = new();
+    private BulletManager _bulletManager;
     private LevelManager _levelManager;
     private HudPanelData _hudData = new();
 
@@ -44,20 +45,33 @@ public class PlayingScreen : IScreen
     {
         _player = new Player(_drawer, _input);
         _enemies.Clear();
+        _bulletManager = new BulletManager(_drawer);
         _scoreManager.Reset();
         _hudData = new HudPanelData();
 
-        _levelManager = new LevelManager();
-        _levelManager.OnSpawnEnemy += HandleSpawnEnemy;
-        _levelManager.OnPhaseChanged += HandlePhaseChanged;
+        if (GameConfig.IsDebugMode)
+        {
+            // Debug mode: spawn single enemy at center
+            var enemyPos = new Vector2(GameConfig.Playfield.Center.X, GameConfig.Playfield.Top + 50);
+            var enemyVel = new Vector2(0, 50); // Slow downward movement
+            _enemies.Add(EnemyFactory.Create(_drawer, GameConfig.SelectedEnemyType, enemyPos, enemyVel, _bulletManager));
+            _hudData.PhaseName = $"Debug: {GameConfig.SelectedEnemyType}";
+        }
+        else
+        {
+            // Normal mode: load level
+            _levelManager = new LevelManager();
+            _levelManager.OnSpawnEnemy += HandleSpawnEnemy;
+            _levelManager.OnPhaseChanged += HandlePhaseChanged;
 
-        string levelPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Content", "Levels", "stage1.json");
-        _levelManager.LoadLevel(levelPath);
+            string levelPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Content", "Levels", "stage1.json");
+            _levelManager.LoadLevel(levelPath);
+        }
     }
 
     public void OnExit()
     {
-        if (_levelManager != null)
+        if (!GameConfig.IsDebugMode && _levelManager != null)
         {
             _levelManager.OnSpawnEnemy -= HandleSpawnEnemy;
             _levelManager.OnPhaseChanged -= HandlePhaseChanged;
@@ -72,28 +86,69 @@ public class PlayingScreen : IScreen
             return;
         }
 
-        _player.Update(gameTime);
+        _player.Update(gameTime, _player.Position);
 
-        int livingCount = _enemies.Count(e => e.IsAlive);
-        _levelManager.Update(gameTime, livingCount);
+        if (!GameConfig.IsDebugMode)
+        {
+            int livingCount = _enemies.Count(e => e.IsAlive);
+            _levelManager.Update(gameTime, livingCount);
+        }
 
         for (int i = _enemies.Count - 1; i >= 0; i--)
         {
-            _enemies[i].Update(gameTime);
+            _enemies[i].Update(gameTime, _player.Position);
             if (!_enemies[i].IsAlive)
             {
                 _enemies.RemoveAt(i);
             }
         }
 
+        // Update bullets
+        _bulletManager.Update(gameTime);
+
+        // Check collisions between bullets and player
+        foreach (var bullet in _bulletManager.ActiveBullets)
+        {
+            if (_player.Bounds.Intersects(bullet.Bounds))
+            {
+                // Player hit, for now just log or handle damage
+                // Since player has no HP yet, perhaps trigger game over
+                OnGameOver?.Invoke();
+                return;
+            }
+        }
+
+        // Check collisions between lasers and player
+        foreach (var laser in _bulletManager.ActiveLasers)
+        {
+            if (laser.IsActive && _player.Bounds.Intersects(laser.Bounds))
+            {
+                OnGameOver?.Invoke();
+                return;
+            }
+        }
+
         // Update HUD data
         _hudData.Score = _scoreManager.Score;
-        _hudData.PhaseName = _levelManager.CurrentPhaseName;
+        if (!GameConfig.IsDebugMode)
+        {
+            _hudData.PhaseName = _levelManager.CurrentPhaseName;
+        }
 
         // Check victory
-        if (_levelManager.IsLevelComplete && _enemies.Count(e => e.IsAlive) == 0)
+        if (GameConfig.IsDebugMode)
         {
-            OnVictory?.Invoke();
+            if (_enemies.Count(e => e.IsAlive) == 0)
+            {
+                OnVictory?.Invoke();
+            }
+        }
+        else
+        {
+            if (_levelManager.IsLevelComplete && _enemies.Count(e => e.IsAlive) == 0)
+            {
+                OnVictory?.Invoke();
+            }
         }
     }
 
@@ -111,13 +166,16 @@ public class PlayingScreen : IScreen
             enemy.Draw(spriteBatch);
         }
 
+        // Draw bullets
+        _bulletManager.Draw(spriteBatch);
+
         // Draw HUD
         _hudPanel.Draw(spriteBatch, _hudData);
     }
 
     private void HandleSpawnEnemy(object sender, SpawnEnemyEventArgs e)
     {
-        _enemies.Add(EnemyFactory.Create(_drawer, e.EnemyType, e.Position, e.Velocity));
+        _enemies.Add(EnemyFactory.Create(_drawer, e.EnemyType, e.Position, e.Velocity, _bulletManager));
     }
 
     private void HandlePhaseChanged(object sender, int newPhaseIndex)

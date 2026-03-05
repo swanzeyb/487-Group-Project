@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework;
+using Entities;
 
 namespace Core;
 
@@ -23,4 +24,8 @@ public static class GameConfig
     public const float PlayerSpeedNormal = 260f;
     public const float PlayerSpeedSlow = 130f;
     public const float BulletSpeedDefault = 180f;
+
+    // Debug/Test Mode settings
+    public static bool IsDebugMode { get; set; } = false;
+    public static EnemyType SelectedEnemyType { get; set; } = EnemyType.Grunt;
 }

@@ -23,6 +23,7 @@ public class Game1 : Game
 
     // Screens
     private MenuScreen _menuScreen = null!;
+    private TestSelectionScreen _testSelectionScreen = null!;
     private PlayingScreen _playingScreen = null!;
     private PauseScreen _pauseScreen = null!;
     private GameOverScreen _gameOverScreen = null!;
@@ -63,8 +64,12 @@ public class Game1 : Game
         // Create screens
         _menuScreen = new MenuScreen(titleFont, defaultFont);
         _menuScreen.OnStartGame = () => TransitionTo(GameState.Playing);
+        _menuScreen.OnTest = () => TransitionTo(GameState.TestSelection);
         _menuScreen.OnKeyConfig = () => OpenKeyConfig(GameState.Menu);
         _menuScreen.OnQuit = () => Exit();
+
+        _testSelectionScreen = new TestSelectionScreen(titleFont, defaultFont);
+        _testSelectionScreen.OnEnterGame = () => TransitionTo(GameState.Playing);
 
         _playingScreen = new PlayingScreen(_drawer, _input, _keyBindings, _scoreManager, defaultFont);
         _playingScreen.OnPause = () => TransitionTo(GameState.Paused);
@@ -139,6 +144,7 @@ public class Game1 : Game
     private IScreen GetScreen(GameState state) => state switch
     {
         GameState.Menu => _menuScreen,
+        GameState.TestSelection => _testSelectionScreen,
         GameState.Playing => _playingScreen,
         GameState.Paused => _pauseScreen,
         GameState.GameOver => _gameOverScreen,
