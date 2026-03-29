@@ -113,6 +113,30 @@ public class PlayingScreen : IScreen
         // Update bullets
         _bulletManager.Update(gameTime);
 
+        // Check collisions between player bullets and enemies
+        foreach (var bullet in _bulletManager.ActiveBullets.ToList())
+        {
+            if (bullet.IsPlayerFired)
+            {
+                foreach (var enemy in _enemies)
+                {
+                    if (enemy.IsAlive && enemy.Bounds.Intersects(bullet.Bounds))
+                    {
+                        enemy.TakeDamage(bullet.Damage);
+                        bullet.IsAlive = false;
+                        
+                        // Award points when enemy dies
+                        if (!enemy.IsAlive)
+                        {
+                            _scoreManager.AddScore(100); // You can adjust point values
+                        }
+                        
+                        break; // Bullet hit, move to next bullet
+                    }
+                }
+            }
+        }
+
         // Check collisions between bullets and player
         foreach (var bullet in _bulletManager.ActiveBullets)
         {

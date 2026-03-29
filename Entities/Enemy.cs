@@ -23,6 +23,7 @@ public class Enemy:IGameEntity
     public Vector2 Position { get; private set; }
     public EnemyType Type { get; private set; }
     public int HP => _hp;
+    public Rectangle Bounds => new Rectangle((int)Position.X - _size / 2, (int)Position.Y - _size, _size, _size);
 
     private int _hp;
     private Vector2 _velocity;
