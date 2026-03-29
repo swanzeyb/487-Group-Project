@@ -92,7 +92,7 @@ public class PlayingScreen : IScreen
         if (input.Pressed(_keyBindings.GetKey("Shoot")))
         {
             var bulletVelocity = new Vector2(0, -500); // Shoot upward
-            _bulletManager.FireBullet(_player.Position, bulletVelocity, damage: 1);
+            _bulletManager.FireBullet(_player.Position, bulletVelocity, damage: 1, isPlayerFired: true);
         }
 
         if (!GameConfig.IsDebugMode)
@@ -116,10 +116,9 @@ public class PlayingScreen : IScreen
         // Check collisions between bullets and player
         foreach (var bullet in _bulletManager.ActiveBullets)
         {
-            if (_player.Bounds.Intersects(bullet.Bounds))
+            if (!bullet.IsPlayerFired && _player.Bounds.Intersects(bullet.Bounds))
             {
-                // Player hit, for now just log or handle damage
-                // Since player has no HP yet, trigger game over instead
+                // Player hit by enemy bullet
                 OnGameOver?.Invoke();
                 return;
             }

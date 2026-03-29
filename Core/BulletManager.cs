@@ -25,7 +25,7 @@ public class BulletManager
         }
     }
 
-    public void FireBullet(Vector2 position, Vector2 velocity, int damage = 1)
+    public void FireBullet(Vector2 position, Vector2 velocity, int damage = 1, bool isPlayerFired = false)
     {
         var bullet = GetInactiveBullet();
         if (bullet != null)
@@ -33,6 +33,7 @@ public class BulletManager
             bullet.Position = position;
             bullet.Velocity = velocity;
             bullet.Damage = damage;
+            bullet.IsPlayerFired = isPlayerFired;
             bullet.IsAlive = true;
         }
     }
