@@ -88,6 +88,13 @@ public class PlayingScreen : IScreen
 
         _player.Update(gameTime, _player.Position);
 
+        // Handle player shooting
+        if (input.Pressed(_keyBindings.GetKey("Shoot")))
+        {
+            var bulletVelocity = new Vector2(0, -500); // Shoot upward
+            _bulletManager.FireBullet(_player.Position, bulletVelocity, damage: 1);
+        }
+
         if (!GameConfig.IsDebugMode)
         {
             int livingCount = _enemies.Count(e => e.IsAlive);
