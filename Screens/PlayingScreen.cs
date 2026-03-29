@@ -109,12 +109,13 @@ public class PlayingScreen : IScreen
         // Check collisions between bullets and player
         foreach (var bullet in _bulletManager.ActiveBullets)
         {
-            if (_player.Bounds.Intersects(bullet.Bounds))
+            if (bullet.IsAlive && _player.Bounds.Intersects(bullet.Bounds))
             {
-                // Player hit, for now just log or handle damage
-                // Since player has no HP yet, trigger game over instead
-                OnGameOver?.Invoke();
-                return;
+                // Apply damage to the player
+                _player.TakeDamage(bullet.Damage);
+
+                // Destroy the bullet so it doesn't hit multiple times
+                bullet.IsAlive = false;
             }
         }
 
@@ -123,13 +124,24 @@ public class PlayingScreen : IScreen
         {
             if (laser.IsActive && LaserIntersectsPlayer(laser, _player.Bounds))
             {
-                OnGameOver?.Invoke();
-                return;
+                _player.TakeDamage(_player.MaxHealth);
             }
+        }
+
+        // Check if player died during this frame
+        if (!_player.IsAlive)
+        {
+            OnGameOver?.Invoke();
+            return;
         }
 
         // Update HUD data
         _hudData.Score = _scoreManager.Score;
+
+        // Update health data
+        _hudData.PlayerHealth = _player.CurrentHealth;
+        _hudData.PlayerMaxHealth = _player.MaxHealth;
+
         if (!GameConfig.IsDebugMode)
         {
             _hudData.PhaseName = _levelManager.CurrentPhaseName;

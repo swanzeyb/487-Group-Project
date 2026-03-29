@@ -9,7 +9,7 @@ public class Bullet
     public bool IsAlive { get; set; } = true;
     public Vector2 Position { get; set; }
     public Vector2 Velocity { get; set; }
-    public int Damage { get; set; } = 1;
+    public int Damage { get; set; } = 5;
     public Rectangle Bounds => new Rectangle((int)Position.X - 2, (int)Position.Y - 2, 4, 4);
 
     private readonly SimpleDrawer _drawer;

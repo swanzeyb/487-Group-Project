@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Core;
@@ -38,13 +39,41 @@ public class HudPanel
 
         // Lives
         spriteBatch.DrawString(_font, $"Lives:", new Vector2(x, y), Color.LightGray);
-        // Draw star indicators for lives
         for (int i = 0; i < data.Lives; i++)
         {
             float starX = x + 60 + i * 20;
             _drawer.DrawRect(spriteBatch, new Rectangle((int)starX, (int)y + 2, 12, 12), Color.Gold);
         }
         y += lineHeight;
+
+        // --- Player HP Bar ---
+        spriteBatch.DrawString(_font, "HP:", new Vector2(x, y), Color.LightGray);
+
+        int hpBarWidth = panelW - 80;
+        int hpBarHeight = 16;
+        int hpBarX = (int)x + 40;
+        int hpBarY = (int)y + 6;
+
+        // Calculate percentage (clamped to prevent drawing errors)
+        float healthPercent = data.PlayerMaxHealth > 0 ? (float)data.PlayerHealth / data.PlayerMaxHealth : 0f;
+        healthPercent = Math.Clamp(healthPercent, 0f, 1f);
+
+        // HP Background (Red)
+        _drawer.DrawRect(spriteBatch, new Rectangle(hpBarX, hpBarY, hpBarWidth, hpBarHeight), Color.DarkRed);
+
+        // HP Fill
+        int filledWidth = (int)(hpBarWidth * healthPercent);
+        if (filledWidth > 0)
+        {
+            // Dynamic coloring based on health percentage
+            Color hpColor = healthPercent > 0.5f ? Color.Green : (healthPercent > 0.25f ? Color.Orange : Color.Red);
+            _drawer.DrawRect(spriteBatch, new Rectangle(hpBarX, hpBarY, filledWidth, hpBarHeight), hpColor);
+        }
+
+        // HP Outline
+        _drawer.DrawRectOutline(spriteBatch, new Rectangle(hpBarX, hpBarY, hpBarWidth, hpBarHeight), 1, Color.White);
+        y += lineHeight;
+        // -----------------------
 
         // Score
         spriteBatch.DrawString(_font, $"Score: {data.Score}", new Vector2(x, y), Color.LightGray);
@@ -65,7 +94,7 @@ public class HudPanel
         spriteBatch.DrawString(_font, phaseName, new Vector2(x + 8, y), Color.Cyan);
         y += lineHeight + 16;
 
-        // Boss HP bar (only if boss health < 1 or phaseName contains "boss")
+        // Boss HP bar
         if (data.BossHealthPercent < 1f || (data.PhaseName?.ToLower().Contains("boss") ?? false))
         {
             spriteBatch.DrawString(_font, "Boss HP:", new Vector2(x, y), Color.White);

@@ -9,6 +9,14 @@ public class TargetedStrategy : IShootingStrategy
     private float _timeSinceLastShot;
     private const float ShotInterval = 1.5f; // Shoot every 1.5 seconds
 
+    // Add damage property
+    private readonly int _damage;
+
+    public TargetedStrategy(int damage = 10)
+    {
+        _damage = damage;
+    }
+
     public void Update(GameTime gameTime, Vector2 entityPosition, Vector2 playerPosition, BulletManager bulletManager)
     {
         _timeSinceLastShot += (float)gameTime.ElapsedGameTime.TotalSeconds;
@@ -24,7 +32,9 @@ public class TargetedStrategy : IShootingStrategy
                 direction.Normalize();
             }
             Vector2 velocity = direction * 250f; // Speed
-            bulletManager.FireBullet(entityPosition, velocity);
+
+            // Pass damage to the bullet manager
+            bulletManager.FireBullet(entityPosition, velocity, _damage);
         }
     }
 }

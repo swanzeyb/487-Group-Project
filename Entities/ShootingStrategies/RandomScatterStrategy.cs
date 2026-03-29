@@ -10,6 +10,14 @@ public class RandomScatterStrategy : IShootingStrategy
     private float _timeSinceLastShot;
     private const float ShotInterval = 2.0f; // Shoot every 2 seconds
 
+    // Add damage property
+    private readonly int _damage;
+
+    public RandomScatterStrategy(int damage = 5)
+    {
+        _damage = damage;
+    }
+
     public void Update(GameTime gameTime, Vector2 entityPosition, Vector2 playerPosition, BulletManager bulletManager)
     {
         _timeSinceLastShot += (float)gameTime.ElapsedGameTime.TotalSeconds;
@@ -24,7 +32,9 @@ public class RandomScatterStrategy : IShootingStrategy
                 float angle = (float)(_random.NextDouble() * Math.PI * 2);
                 Vector2 direction = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
                 Vector2 velocity = direction * 200f; // Speed
-                bulletManager.FireBullet(entityPosition, velocity);
+
+                // Pass damage to the bullet manager
+                bulletManager.FireBullet(entityPosition, velocity, _damage);
             }
         }
     }

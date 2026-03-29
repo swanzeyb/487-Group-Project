@@ -14,11 +14,11 @@ public static class EnemyFactory
     {
         IShootingStrategy strategy = type switch
         {
-            EnemyType.Grunt => new RandomScatterStrategy(),
-            EnemyType.BetterGrunt => new TargetedStrategy(),
-            EnemyType.MidBoss => new AutomaticFireStrategy(),
+            EnemyType.Grunt => new RandomScatterStrategy(5),
+            EnemyType.BetterGrunt => new TargetedStrategy(10),
+            EnemyType.MidBoss => new AutomaticFireStrategy(12),
             EnemyType.FinalBoss => new LaserBeamStrategy(),
-            _ => new RandomScatterStrategy()
+            _ => new RandomScatterStrategy(5)
         };
 
         return new Enemy(drawer, type, position, velocity, strategy, bulletManager);

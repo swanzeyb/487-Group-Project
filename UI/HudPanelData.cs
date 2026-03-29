@@ -16,4 +16,8 @@ public class HudPanelData
     }
 
     public int BombCount { get; set; } = 0;
+
+    // Add Player Health Tracking
+    public int PlayerHealth { get; set; } = 100;
+    public int PlayerMaxHealth { get; set; } = 100;
 }
