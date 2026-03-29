@@ -9,6 +9,7 @@ public sealed class Player : IGameEntity
 {
     public bool IsAlive => true;
     public Vector2 Position { get; private set; }
+    public Rectangle Bounds => new Rectangle((int)Position.X - 10, (int)Position.Y - 10, 20, 20);
     private readonly SimpleDrawer _drawer;
     private readonly InputState _input;
 
@@ -25,7 +26,7 @@ public sealed class Player : IGameEntity
         );
     }
 
-    public void Update(GameTime gameTime)
+    public void Update(GameTime gameTime, Vector2 playerPosition)
     {
         float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
 

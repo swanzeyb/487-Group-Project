@@ -4,37 +4,33 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Core;
+using Entities;
 
 namespace Screens;
 
-public class MenuScreen : IScreen
+public class TestSelectionScreen : IScreen
 {
-    private readonly MenuLogic _logic;
+    private readonly TestSelectionLogic _logic;
     private SpriteFont _titleFont;
     private SpriteFont _defaultFont;
 
-    public Action OnStartGame;
-    public Action OnTest;
-    public Action OnKeyConfig;
-    public Action OnQuit;
+    public Action OnEnterGame;
 
-    public MenuScreen(SpriteFont titleFont, SpriteFont defaultFont)
+    public TestSelectionScreen(SpriteFont titleFont, SpriteFont defaultFont)
     {
         _titleFont = titleFont;
         _defaultFont = defaultFont;
-        _logic = new MenuLogic(new List<MenuItem>
+        _logic = new TestSelectionLogic(new List<MenuItem>
         {
-            new MenuItem("Start Game", "StartGame"),
-            new MenuItem("Test", "Test"),
-            new MenuItem("Key Config", "KeyConfig"),
-            new MenuItem("Quit", "Quit")
+            new MenuItem("Grunt", "Grunt"),
+            new MenuItem("Better Grunt", "BetterGrunt"),
+            new MenuItem("Mid Boss", "MidBoss"),
+            new MenuItem("Final Boss", "FinalBoss"),
+            new MenuItem("Enter Game", "EnterGame")
         });
     }
 
-    public void OnEnter()
-    {
-        GameConfig.IsDebugMode = false;
-    }
+    public void OnEnter() { }
     public void OnExit() { }
 
     public void Update(GameTime gameTime, InputState input)
@@ -47,10 +43,14 @@ public class MenuScreen : IScreen
             var action = _logic.Confirm();
             switch (action)
             {
-                case "StartGame": OnStartGame?.Invoke(); break;
-                case "Test": OnTest?.Invoke(); break;
-                case "KeyConfig": OnKeyConfig?.Invoke(); break;
-                case "Quit": OnQuit?.Invoke(); break;
+                case "Grunt": GameConfig.SelectedEnemyType = EnemyType.Grunt; break;
+                case "BetterGrunt": GameConfig.SelectedEnemyType = EnemyType.BetterGrunt; break;
+                case "MidBoss": GameConfig.SelectedEnemyType = EnemyType.MidBoss; break;
+                case "FinalBoss": GameConfig.SelectedEnemyType = EnemyType.FinalBoss; break;
+                case "EnterGame":
+                    GameConfig.IsDebugMode = true;
+                    OnEnterGame?.Invoke();
+                    break;
             }
         }
     }
@@ -58,13 +58,19 @@ public class MenuScreen : IScreen
     public void Draw(SpriteBatch spriteBatch, SimpleDrawer drawer)
     {
         // Title
-        string title = "BULLET HELL";
+        string title = "TEST MODE";
         var titleSize = _titleFont.MeasureString(title);
         var titlePos = new Vector2((GameConfig.ScreenWidth - titleSize.X) / 2, 120);
         spriteBatch.DrawString(_titleFont, title, titlePos, Color.Red);
 
+        // Subtitle
+        string subtitle = "Select Enemy Type";
+        var subSize = _defaultFont.MeasureString(subtitle);
+        var subPos = new Vector2((GameConfig.ScreenWidth - subSize.X) / 2, 180);
+        spriteBatch.DrawString(_defaultFont, subtitle, subPos, Color.Yellow);
+
         // Menu items
-        float startY = 260;
+        float startY = 220;
         for (int i = 0; i < _logic.Items.Count; i++)
         {
             var item = _logic.Items[i];
@@ -82,6 +88,12 @@ public class MenuScreen : IScreen
 
             spriteBatch.DrawString(_defaultFont, text, pos, color);
         }
+
+        // Selected enemy type display
+        string selectedEnemy = $"Selected Enemy: {GameConfig.SelectedEnemyType}";
+        var selectedSize = _defaultFont.MeasureString(selectedEnemy);
+        var selectedPos = new Vector2((GameConfig.ScreenWidth - selectedSize.X) / 2, 410);
+        spriteBatch.DrawString(_defaultFont, selectedEnemy, selectedPos, Color.Cyan);
 
         // Instructions
         string instructions = "Arrow Keys to navigate, Enter to select";

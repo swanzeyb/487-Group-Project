@@ -1,5 +1,6 @@
 using Core;
 using Microsoft.Xna.Framework;
+using Entities.ShootingStrategies;
 
 namespace Entities;
 
@@ -9,8 +10,17 @@ namespace Entities;
 /// </summary>
 public static class EnemyFactory
 {
-    public static Enemy Create(SimpleDrawer drawer, EnemyType type, Vector2 position, Vector2 velocity)
+    public static Enemy Create(SimpleDrawer drawer, EnemyType type, Vector2 position, Vector2 velocity, BulletManager bulletManager)
     {
-        return new Enemy(drawer, type, position, velocity);
+        IShootingStrategy strategy = type switch
+        {
+            EnemyType.Grunt => new RandomScatterStrategy(),
+            EnemyType.BetterGrunt => new TargetedStrategy(),
+            EnemyType.MidBoss => new AutomaticFireStrategy(),
+            EnemyType.FinalBoss => new LaserBeamStrategy(),
+            _ => new RandomScatterStrategy()
+        };
+
+        return new Enemy(drawer, type, position, velocity, strategy, bulletManager);
     }
 }

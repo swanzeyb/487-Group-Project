@@ -9,7 +9,8 @@ public class ScreenManager
 
     private static readonly Dictionary<GameState, HashSet<GameState>> _validTransitions = new()
     {
-        { GameState.Menu, new HashSet<GameState> { GameState.Playing } },
+        { GameState.Menu, new HashSet<GameState> { GameState.TestSelection, GameState.Playing } },
+        { GameState.TestSelection, new HashSet<GameState> { GameState.Playing } },
         { GameState.Playing, new HashSet<GameState> { GameState.Paused, GameState.GameOver, GameState.Victory } },
         { GameState.Paused, new HashSet<GameState> { GameState.Playing, GameState.Menu } },
         { GameState.GameOver, new HashSet<GameState> { GameState.Menu, GameState.Playing } },
