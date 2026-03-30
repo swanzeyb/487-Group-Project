@@ -60,7 +60,29 @@ public class Laser
 
     public void Draw(SpriteBatch spriteBatch)
     {
-        Color color = IsWarning ? Color.Yellow : Color.Red;
-        _drawer.DrawLine(spriteBatch, _startPosition, _endPosition, color, BeamThickness);
+        if (IsWarning)
+        {
+            float blink = 0.35f + 0.65f * (float)Math.Abs(Math.Sin(_timer * 18f));
+            var warningGlow = new Color(255, 200, 70, (int)(90f * blink));
+            var warningCore = new Color(255, 245, 180, (int)(180f * blink));
+
+            _drawer.DrawLine(spriteBatch, _startPosition, _endPosition, warningGlow, BeamThickness * 0.42f);
+            _drawer.DrawLine(spriteBatch, _startPosition, _endPosition, warningCore, 3f);
+            _drawer.DrawCircle(spriteBatch, _startPosition, 8f, warningCore, segments: 20, thickness: 2);
+            _drawer.DrawCircle(spriteBatch, _endPosition, 8f, warningCore, segments: 20, thickness: 2);
+            return;
+        }
+
+        float pulse = 0.88f + 0.12f * (float)Math.Sin(_timer * 24f);
+        var beamGlow = new Color(255, 70, 70, 120);
+        var beamMid = new Color(255, 145, 90, 170);
+        var beamCore = new Color(255, 245, 235, 230);
+
+        _drawer.DrawLine(spriteBatch, _startPosition, _endPosition, beamGlow, BeamThickness * 1.55f * pulse);
+        _drawer.DrawLine(spriteBatch, _startPosition, _endPosition, beamMid, BeamThickness * 0.95f);
+        _drawer.DrawLine(spriteBatch, _startPosition, _endPosition, beamCore, BeamThickness * 0.35f);
+
+        _drawer.DrawCircle(spriteBatch, _startPosition, 11f, beamMid, segments: 24, thickness: 3);
+        _drawer.DrawCircle(spriteBatch, _endPosition, 11f, beamMid, segments: 24, thickness: 3);
     }
 }

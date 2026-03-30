@@ -7,7 +7,7 @@ namespace Entities.ShootingStrategies;
 public class LaserBeamStrategy : IShootingStrategy
 {
     private float _timeSinceLastLaser;
-    private const float LaserInterval = 2.0f; // Fire laser every 2 seconds
+    private const float LaserInterval = 1.5f; // Fire laser faster in final boss phase
     private readonly int _damage;
 
     public LaserBeamStrategy(int damage = 0)
