@@ -10,7 +10,7 @@ namespace Entities;
 /// </summary>
 public static class EnemyFactory
 {
-    public static Enemy Create(SimpleDrawer drawer, EnemyType type, Vector2 position, Vector2 velocity, BulletManager bulletManager)
+    public static Enemy Create(SimpleDrawer drawer, EnemyType type, Vector2 position, Vector2 velocity, BulletManager bulletManager, string movementPattern = "linear")
     {
         IShootingStrategy strategy = type switch
         {
@@ -21,6 +21,6 @@ public static class EnemyFactory
             _ => new RandomScatterStrategy()
         };
 
-        return new Enemy(drawer, type, position, velocity, strategy, bulletManager);
+        return new Enemy(drawer, type, position, velocity, strategy, bulletManager, movementPattern);
     }
 }

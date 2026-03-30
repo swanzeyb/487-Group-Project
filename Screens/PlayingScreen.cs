@@ -230,7 +230,7 @@ public class PlayingScreen : IScreen
 
     private void HandleSpawnEnemy(object sender, SpawnEnemyEventArgs e)
     {
-        _enemies.Add(EnemyFactory.Create(_drawer, e.EnemyType, e.Position, e.Velocity, _bulletManager));
+        _enemies.Add(EnemyFactory.Create(_drawer, e.EnemyType, e.Position, e.Velocity, _bulletManager, e.MovementPattern));
     }
 
     // helper used during Update for more accurate laser collision tests
