@@ -171,6 +171,20 @@ public class PlayingScreen : IScreen
         // Update HUD data
         _hudData.Score = _scoreManager.Score;
         _hudData.PlayerHP = _player.HP;
+        
+        // Update boss health bar if a boss is present
+        var boss = _enemies.FirstOrDefault(e => e.Type == EnemyType.MidBoss || e.Type == EnemyType.FinalBoss);
+        if (boss != null)
+        {
+            // Calculate max HP based on boss type
+            int maxHP = boss.Type == EnemyType.MidBoss ? 100 : 300;
+            _hudData.BossHealthPercent = boss.HP / (float)maxHP;
+        }
+        else
+        {
+            _hudData.BossHealthPercent = 1f;
+        }
+        
         if (!GameConfig.IsDebugMode)
         {
             _hudData.PhaseName = _levelManager.CurrentPhaseName;
