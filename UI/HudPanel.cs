@@ -36,16 +36,6 @@ public class HudPanel
         spriteBatch.DrawString(_font, "Player", new Vector2(x, y), Color.White);
         y += lineHeight + 4;
 
-        // Lives
-        spriteBatch.DrawString(_font, $"Lives:", new Vector2(x, y), Color.LightGray);
-        // Draw star indicators for lives
-        for (int i = 0; i < data.Lives; i++)
-        {
-            float starX = x + 60 + i * 20;
-            _drawer.DrawRect(spriteBatch, new Rectangle((int)starX, (int)y + 2, 12, 12), Color.Gold);
-        }
-        y += lineHeight;
-
         // Player HP
         spriteBatch.DrawString(_font, $"HP: {data.PlayerHP}/100", new Vector2(x, y), Color.LightGray);
         // Draw HP bar
