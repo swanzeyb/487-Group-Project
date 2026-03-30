@@ -14,9 +14,9 @@ public static class EnemyFactory
     {
         IShootingStrategy strategy = type switch
         {
-            EnemyType.Grunt => new RandomScatterStrategy(),
-            EnemyType.BetterGrunt => new TargetedStrategy(),
-            EnemyType.MidBoss => new AutomaticFireStrategy(),
+            EnemyType.Grunt => new RandomScatterStrategy(damage: 5),
+            EnemyType.BetterGrunt => new TargetedStrategy(damage: 5),
+            EnemyType.MidBoss => new AutomaticFireStrategy(damage: 10),
             EnemyType.FinalBoss => new LaserBeamStrategy(),
             _ => new RandomScatterStrategy()
         };

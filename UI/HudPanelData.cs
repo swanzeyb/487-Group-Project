@@ -6,6 +6,7 @@ public class HudPanelData
 {
     public int Lives { get; set; } = 3;
     public int Score { get; set; } = 0;
+    public int PlayerHP { get; set; } = 100;
     public string PhaseName { get; set; } = "";
 
     private float _bossHealthPercent = 1f;

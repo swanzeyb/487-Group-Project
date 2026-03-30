@@ -128,7 +128,7 @@ public class PlayingScreen : IScreen
                         // Award points when enemy dies
                         if (!enemy.IsAlive)
                         {
-                            _scoreManager.AddScore(100); // You can adjust point values
+                            _scoreManager.AddScore(100); 
                         }
                         
                         break; // Bullet hit, move to next bullet
@@ -138,13 +138,19 @@ public class PlayingScreen : IScreen
         }
 
         // Check collisions between bullets and player
-        foreach (var bullet in _bulletManager.ActiveBullets)
+        foreach (var bullet in _bulletManager.ActiveBullets.ToList())
         {
             if (!bullet.IsPlayerFired && _player.Bounds.Intersects(bullet.Bounds))
             {
                 // Player hit by enemy bullet
-                OnGameOver?.Invoke();
-                return;
+                _player.TakeDamage(bullet.Damage);
+                bullet.IsAlive = false;
+                
+                if (!_player.IsAlive)
+                {
+                    OnGameOver?.Invoke();
+                    return;
+                }
             }
         }
 
@@ -160,6 +166,7 @@ public class PlayingScreen : IScreen
 
         // Update HUD data
         _hudData.Score = _scoreManager.Score;
+        _hudData.PlayerHP = _player.HP;
         if (!GameConfig.IsDebugMode)
         {
             _hudData.PhaseName = _levelManager.CurrentPhaseName;

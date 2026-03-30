@@ -46,6 +46,18 @@ public class HudPanel
         }
         y += lineHeight;
 
+        // Player HP
+        spriteBatch.DrawString(_font, $"HP: {data.PlayerHP}/100", new Vector2(x, y), Color.LightGray);
+        // Draw HP bar
+        int hpBarWidth = panelW - 40;
+        int hpBarHeight = 12;
+        int hpBarX = panelX + 20;
+        _drawer.DrawRect(spriteBatch, new Rectangle(hpBarX, (int)y + 18, hpBarWidth, hpBarHeight), Color.DarkRed);
+        int filledWidth = (int)(hpBarWidth * (data.PlayerHP / 100f));
+        _drawer.DrawRect(spriteBatch, new Rectangle(hpBarX, (int)y + 18, filledWidth, hpBarHeight), Color.LimeGreen);
+        y += lineHeight + 16;
+        y += lineHeight;
+
         // Score
         spriteBatch.DrawString(_font, $"Score: {data.Score}", new Vector2(x, y), Color.LightGray);
         y += lineHeight;

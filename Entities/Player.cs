@@ -7,7 +7,9 @@ namespace Entities;
 
 public sealed class Player : IGameEntity
 {
-    public bool IsAlive => true;
+    private int _hp = 100;
+    public bool IsAlive => _hp > 0;
+    public int HP => _hp;
     public Vector2 Position { get; private set; }
     public Rectangle Bounds => new Rectangle((int)Position.X - 10, (int)Position.Y - 10, 20, 20);
     private readonly SimpleDrawer _drawer;
@@ -49,6 +51,12 @@ public sealed class Player : IGameEntity
             MathHelper.Clamp(Position.X, GameConfig.Playfield.Left + 10, GameConfig.Playfield.Right - 10),
             MathHelper.Clamp(Position.Y, GameConfig.Playfield.Top + 10, GameConfig.Playfield.Bottom - 10)
         );
+    }
+
+    public void TakeDamage(int damage)
+    {
+        _hp -= damage;
+        if (_hp < 0) _hp = 0;
     }
 
     public void Draw(SpriteBatch spriteBatch)
