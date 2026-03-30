@@ -64,7 +64,9 @@ public class PlayingScreen : IScreen
     private LevelManager _levelManager;
     private HudPanelData _hudData = new();
     private float _timeSinceLastShot = 0f;
-    private const float PlayerFireRate = 0.1f; // 10 shots per second
+    private const float PlayerFireRateBase = 0.1f; // Base: 10 shots per second
+    private const float PlayerFireRatePhaseStep = 0.012f; // Faster each phase
+    private const float PlayerFireRateMin = 0.055f; // Cap at ~18.2 shots per second
     private float _bombVisualTimer = 0f;
     private float _bombInvulnerabilityTimer = 0f;
     private const float BombVisualDuration = 0.35f;
@@ -73,7 +75,7 @@ public class PlayingScreen : IScreen
     private const int BombDamage = 20;
     private float _meteorSpawnTimer = 0f;
     private const float MeteorSpawnInterval = 0.9f;
-    private const int MeteorDamage = 50;
+    private const int MeteorDamage = 25;
 
     public Action OnPause;
     public Action OnGameOver;
@@ -194,7 +196,8 @@ public class PlayingScreen : IScreen
 
         // Handle player shooting (continuous fire)
         _timeSinceLastShot += (float)gameTime.ElapsedGameTime.TotalSeconds;
-        if (input.Down(_keyBindings.GetKey("Shoot")) && _timeSinceLastShot >= PlayerFireRate)
+        float currentFireRate = GetCurrentPlayerFireRate();
+        if (input.Down(_keyBindings.GetKey("Shoot")) && _timeSinceLastShot >= currentFireRate)
         {
             var bulletVelocity = new Vector2(0, -500); // Shoot upward
             _bulletManager.FireBullet(
@@ -531,6 +534,30 @@ public class PlayingScreen : IScreen
 
         string phase = _hudData.PhaseName?.ToLowerInvariant() ?? string.Empty;
         return phase.Contains("mid boss") || phase.Contains("final boss");
+    }
+
+    private float GetCurrentPlayerFireRate()
+    {
+        int phaseIndex;
+
+        if (GameConfig.IsDebugMode)
+        {
+            phaseIndex = GameConfig.SelectedEnemyType switch
+            {
+                EnemyType.Grunt => 0,
+                EnemyType.BetterGrunt => 1,
+                EnemyType.MidBoss => 2,
+                EnemyType.FinalBoss => 3,
+                _ => 0
+            };
+        }
+        else
+        {
+            phaseIndex = _levelManager?.CurrentPhaseIndex ?? 0;
+        }
+
+        float scaledRate = PlayerFireRateBase - phaseIndex * PlayerFireRatePhaseStep;
+        return Math.Max(PlayerFireRateMin, scaledRate);
     }
 
     // helper used during Update for more accurate laser collision tests
