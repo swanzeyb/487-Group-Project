@@ -24,6 +24,8 @@ public class PlayingScreen : IScreen
     private BulletManager _bulletManager;
     private LevelManager _levelManager;
     private HudPanelData _hudData = new();
+    private float _timeSinceLastShot = 0f;
+    private const float PlayerFireRate = 0.1f; // 10 shots per second
 
     public Action OnPause;
     public Action OnGameOver;
@@ -88,11 +90,13 @@ public class PlayingScreen : IScreen
 
         _player.Update(gameTime, _player.Position);
 
-        // Handle player shooting
-        if (input.Pressed(_keyBindings.GetKey("Shoot")))
+        // Handle player shooting (continuous fire)
+        _timeSinceLastShot += (float)gameTime.ElapsedGameTime.TotalSeconds;
+        if (input.Down(_keyBindings.GetKey("Shoot")) && _timeSinceLastShot >= PlayerFireRate)
         {
             var bulletVelocity = new Vector2(0, -500); // Shoot upward
             _bulletManager.FireBullet(_player.Position, bulletVelocity, damage: 1, isPlayerFired: true);
+            _timeSinceLastShot = 0f;
         }
 
         if (!GameConfig.IsDebugMode)

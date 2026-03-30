@@ -58,12 +58,12 @@ public class Enemy:IGameEntity
             case EnemyType.MidBoss:
                 _color = Color.Purple;
                 _size = 60;
-                _hp = 50;
+                _hp = 100;
                 break;
             case EnemyType.FinalBoss:
                 _color = Color.DarkRed;
                 _size = 120;
-                _hp = 100;
+                _hp = 300;
                 break;
         }
     }
