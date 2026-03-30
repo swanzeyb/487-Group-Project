@@ -8,6 +8,13 @@ public class LaserBeamStrategy : IShootingStrategy
 {
     private float _timeSinceLastLaser;
     private const float LaserInterval = 2.0f; // Fire laser every 2 seconds
+    private readonly int _damage;
+
+    public LaserBeamStrategy(int damage = 0)
+    {
+        // Lasers do 0 damage directly, instant death on contact instead
+        _damage = damage;
+    }
 
     public void Update(GameTime gameTime, Vector2 entityPosition, Vector2 playerPosition, BulletManager bulletManager)
     {
