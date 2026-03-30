@@ -25,6 +25,10 @@ public class PlayingScreen : IScreen
     private readonly Texture2D _midBossSprite;
     private readonly Texture2D _finalBossSprite;
     private readonly Texture2D _panelBorderSprite;
+    private readonly Texture2D _playerBulletSprite;
+    private readonly Texture2D _gruntBulletSprite;
+    private readonly Texture2D _betterGruntBulletSprite;
+    private readonly Texture2D _midBossBulletSprite;
 
     private Player _player;
     private List<Enemy> _enemies = new();
@@ -44,7 +48,11 @@ public class PlayingScreen : IScreen
                          ScoreManager scoreManager, SpriteFont defaultFont, 
                          Texture2D playerSprite, Texture2D gruntSprite, Texture2D betterGruntSprite,
                          Texture2D midBossSprite, Texture2D finalBossSprite,
-                         Texture2D panelBorderSprite)
+                         Texture2D panelBorderSprite,
+                         Texture2D playerBulletSprite,
+                         Texture2D gruntBulletSprite,
+                         Texture2D betterGruntBulletSprite,
+                         Texture2D midBossBulletSprite)
     {
         _drawer = drawer;
         _input = input;
@@ -57,13 +65,22 @@ public class PlayingScreen : IScreen
         _midBossSprite = midBossSprite;
         _finalBossSprite = finalBossSprite;
         _panelBorderSprite = panelBorderSprite;
+        _playerBulletSprite = playerBulletSprite;
+        _gruntBulletSprite = gruntBulletSprite;
+        _betterGruntBulletSprite = betterGruntBulletSprite;
+        _midBossBulletSprite = midBossBulletSprite;
     }
 
     public void OnEnter()
     {
         _player = new Player(_drawer, _input, _playerSprite);
         _enemies.Clear();
-        _bulletManager = new BulletManager(_drawer);
+        _bulletManager = new BulletManager(
+            _drawer,
+            _playerBulletSprite,
+            _gruntBulletSprite,
+            _betterGruntBulletSprite,
+            _midBossBulletSprite);
         _scoreManager.Reset();
         _hudData = new HudPanelData();
 
@@ -121,7 +138,12 @@ public class PlayingScreen : IScreen
         if (input.Down(_keyBindings.GetKey("Shoot")) && _timeSinceLastShot >= PlayerFireRate)
         {
             var bulletVelocity = new Vector2(0, -500); // Shoot upward
-            _bulletManager.FireBullet(_player.Position, bulletVelocity, damage: 1, isPlayerFired: true);
+            _bulletManager.FireBullet(
+                _player.Position,
+                bulletVelocity,
+                damage: 1,
+                isPlayerFired: true,
+                visualType: BulletVisualType.Player);
             _timeSinceLastShot = 0f;
         }
 

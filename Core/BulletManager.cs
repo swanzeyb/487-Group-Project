@@ -11,11 +11,24 @@ public class BulletManager
     private readonly List<Bullet> _bullets = new();
     private readonly List<Laser> _lasers = new();
     private readonly SimpleDrawer _drawer;
+    private readonly Texture2D _playerBulletSprite;
+    private readonly Texture2D _gruntBulletSprite;
+    private readonly Texture2D _betterGruntBulletSprite;
+    private readonly Texture2D _midBossBulletSprite;
     private const int PoolSize = 500;
 
-    public BulletManager(SimpleDrawer drawer)
+    public BulletManager(
+        SimpleDrawer drawer,
+        Texture2D playerBulletSprite,
+        Texture2D gruntBulletSprite,
+        Texture2D betterGruntBulletSprite,
+        Texture2D midBossBulletSprite)
     {
         _drawer = drawer;
+        _playerBulletSprite = playerBulletSprite;
+        _gruntBulletSprite = gruntBulletSprite;
+        _betterGruntBulletSprite = betterGruntBulletSprite;
+        _midBossBulletSprite = midBossBulletSprite;
         // Pre-populate the pool
         for (int i = 0; i < PoolSize; i++)
         {
@@ -25,7 +38,12 @@ public class BulletManager
         }
     }
 
-    public void FireBullet(Vector2 position, Vector2 velocity, int damage = 1, bool isPlayerFired = false)
+    public void FireBullet(
+        Vector2 position,
+        Vector2 velocity,
+        int damage = 1,
+        bool isPlayerFired = false,
+        BulletVisualType visualType = BulletVisualType.Grunt)
     {
         var bullet = GetInactiveBullet();
         if (bullet != null)
@@ -34,6 +52,8 @@ public class BulletManager
             bullet.Velocity = velocity;
             bullet.Damage = damage;
             bullet.IsPlayerFired = isPlayerFired;
+            Point drawSize = GetDrawSize(visualType);
+            bullet.ConfigureVisual(GetBulletSprite(visualType), GetHitboxSize(visualType), drawSize.X, drawSize.Y);
             bullet.IsAlive = true;
         }
     }
@@ -44,7 +64,35 @@ public class BulletManager
         _lasers.Add(laser);
     }
 
-    private Bullet? GetInactiveBullet()
+    private Texture2D GetBulletSprite(BulletVisualType visualType) => visualType switch
+    {
+        BulletVisualType.Player => _playerBulletSprite,
+        BulletVisualType.Grunt => _gruntBulletSprite,
+        BulletVisualType.BetterGrunt => _betterGruntBulletSprite,
+        BulletVisualType.MidBoss => _midBossBulletSprite,
+        _ => _gruntBulletSprite
+    };
+
+    private static int GetHitboxSize(BulletVisualType visualType) => visualType switch
+    {
+        BulletVisualType.Player => 5,
+        BulletVisualType.Grunt => 5,
+        BulletVisualType.BetterGrunt => 6,
+        BulletVisualType.MidBoss => 6,
+        _ => 5
+    };
+
+    private static Point GetDrawSize(BulletVisualType visualType) => visualType switch
+    {
+        // Keep projectiles visually consistent regardless of source texture dimensions.
+        BulletVisualType.Player => new Point(18, 9),
+        BulletVisualType.Grunt => new Point(12, 12),
+        BulletVisualType.BetterGrunt => new Point(12, 12),
+        BulletVisualType.MidBoss => new Point(14, 14),
+        _ => new Point(12, 12)
+    };
+
+    private Bullet GetInactiveBullet()
     {
         foreach (var bullet in _bullets)
         {

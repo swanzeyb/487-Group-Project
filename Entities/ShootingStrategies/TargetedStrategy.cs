@@ -30,7 +30,7 @@ public class TargetedStrategy : IShootingStrategy
                 direction.Normalize();
             }
             Vector2 velocity = direction * 250f; // Speed
-            bulletManager.FireBullet(entityPosition, velocity, damage: _damage);
+            bulletManager.FireBullet(entityPosition, velocity, damage: _damage, visualType: BulletVisualType.BetterGrunt);
         }
     }
 }

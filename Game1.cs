@@ -70,6 +70,10 @@ public class Game1 : Game
         var midBossSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/kenney_simple-space/PNG/Default/satellite_B.png");
         var finalBossSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/kenney_simple-space/PNG/Default/station_B.png");
         var panelBorderSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/kenney-ui-borders/PNG/Default/Border/panel-border-015.png");
+        var playerBulletSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/Player Bullets/P1_Hyper_Bullet.png");
+        var gruntBulletSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/Player Bullets/P1_Bullet_Pink.png");
+        var betterGruntBulletSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/Player Bullets/p1_Bullet_Alt.png");
+        var midBossBulletSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/Player Bullets/P1 Bullet_Yellow_Thinier.png");
 
         // Create screens
         _menuScreen = new MenuScreen(titleFont, defaultFont);
@@ -81,7 +85,22 @@ public class Game1 : Game
         _testSelectionScreen = new TestSelectionScreen(titleFont, defaultFont);
         _testSelectionScreen.OnEnterGame = () => TransitionTo(GameState.Playing);
 
-        _playingScreen = new PlayingScreen(_drawer, _input, _keyBindings, _scoreManager, defaultFont, playerSprite, gruntSprite, betterGruntSprite, midBossSprite, finalBossSprite, panelBorderSprite);
+        _playingScreen = new PlayingScreen(
+            _drawer,
+            _input,
+            _keyBindings,
+            _scoreManager,
+            defaultFont,
+            playerSprite,
+            gruntSprite,
+            betterGruntSprite,
+            midBossSprite,
+            finalBossSprite,
+            panelBorderSprite,
+            playerBulletSprite,
+            gruntBulletSprite,
+            betterGruntBulletSprite,
+            midBossBulletSprite);
         _playingScreen.OnPause = () => TransitionTo(GameState.Paused);
         _playingScreen.OnGameOver = () =>
         {

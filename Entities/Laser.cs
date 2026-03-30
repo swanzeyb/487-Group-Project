@@ -61,7 +61,6 @@ public class Laser
     public void Draw(SpriteBatch spriteBatch)
     {
         Color color = IsWarning ? Color.Yellow : Color.Red;
-        // draw a beam from the start to the end position, rotated automatically by the drawer
-        _drawer.DrawLine(spriteBatch, _startPosition, _endPosition, color, 15f);
+        _drawer.DrawLine(spriteBatch, _startPosition, _endPosition, color, BeamThickness);
     }
 }
