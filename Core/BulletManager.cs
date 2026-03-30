@@ -64,6 +64,19 @@ public class BulletManager
         _lasers.Add(laser);
     }
 
+    public void ClearEnemyProjectiles()
+    {
+        foreach (var bullet in _bullets)
+        {
+            if (bullet.IsAlive && !bullet.IsPlayerFired)
+            {
+                bullet.IsAlive = false;
+            }
+        }
+
+        _lasers.Clear();
+    }
+
     private Texture2D GetBulletSprite(BulletVisualType visualType) => visualType switch
     {
         BulletVisualType.Player => _playerBulletSprite,

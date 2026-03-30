@@ -37,6 +37,12 @@ public class PlayingScreen : IScreen
     private HudPanelData _hudData = new();
     private float _timeSinceLastShot = 0f;
     private const float PlayerFireRate = 0.1f; // 10 shots per second
+    private float _bombVisualTimer = 0f;
+    private float _bombInvulnerabilityTimer = 0f;
+    private const float BombVisualDuration = 0.35f;
+    private const float BombInvulnerabilityDuration = 0.75f;
+    private const int StartingBombCount = 3;
+    private const int BombDamage = 20;
 
     public Action OnPause;
     public Action OnGameOver;
@@ -83,6 +89,9 @@ public class PlayingScreen : IScreen
             _midBossBulletSprite);
         _scoreManager.Reset();
         _hudData = new HudPanelData();
+        _hudData.BombCount = StartingBombCount;
+        _bombVisualTimer = 0f;
+        _bombInvulnerabilityTimer = 0f;
 
         if (GameConfig.IsDebugMode)
         {
@@ -125,10 +134,22 @@ public class PlayingScreen : IScreen
 
     public void Update(GameTime gameTime, InputState input)
     {
+        float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
         if (input.Pressed(_keyBindings.GetKey("Pause")))
         {
             OnPause?.Invoke();
             return;
+        }
+
+        if (_bombVisualTimer > 0f)
+        {
+            _bombVisualTimer = System.Math.Max(0f, _bombVisualTimer - dt);
+        }
+
+        if (_bombInvulnerabilityTimer > 0f)
+        {
+            _bombInvulnerabilityTimer = System.Math.Max(0f, _bombInvulnerabilityTimer - dt);
         }
 
         _player.Update(gameTime, _player.Position);
@@ -145,6 +166,11 @@ public class PlayingScreen : IScreen
                 isPlayerFired: true,
                 visualType: BulletVisualType.Player);
             _timeSinceLastShot = 0f;
+        }
+
+        if (input.Pressed(_keyBindings.GetKey("Bomb")) && _hudData.BombCount > 0)
+        {
+            ActivateBomb();
         }
 
         if (!GameConfig.IsDebugMode)
@@ -192,7 +218,7 @@ public class PlayingScreen : IScreen
         // Check collisions between bullets and player
         foreach (var bullet in _bulletManager.ActiveBullets.ToList())
         {
-            if (!bullet.IsPlayerFired && _player.Bounds.Intersects(bullet.Bounds))
+            if (_bombInvulnerabilityTimer <= 0f && !bullet.IsPlayerFired && _player.Bounds.Intersects(bullet.Bounds))
             {
                 // Player hit by enemy bullet
                 _player.TakeDamage(bullet.Damage);
@@ -209,7 +235,7 @@ public class PlayingScreen : IScreen
         // Check collisions between lasers and player (using distance-to-segment test)
         foreach (var laser in _bulletManager.ActiveLasers)
         {
-            if (laser.IsActive && LaserIntersectsPlayer(laser, _player.Bounds))
+            if (_bombInvulnerabilityTimer <= 0f && laser.IsActive && LaserIntersectsPlayer(laser, _player.Bounds))
             {
                 OnGameOver?.Invoke();
                 return;
@@ -268,6 +294,16 @@ public class PlayingScreen : IScreen
         // Draw bullets
         _bulletManager.Draw(spriteBatch);
 
+        if (_bombVisualTimer > 0f)
+        {
+            float progress = 1f - (_bombVisualTimer / BombVisualDuration);
+            float radius = 30f + progress * 260f;
+            int alpha = (int)(140f * (1f - progress));
+            alpha = System.Math.Clamp(alpha, 0, 180);
+            Color ringColor = new Color(255, 235, 150, alpha);
+            drawer.DrawCircle(spriteBatch, _player.Position, radius, ringColor, segments: 48, thickness: 4);
+        }
+
         // Draw playfield border from panel-border-015 using 9-slice to match original visuals
         if (_panelBorderSprite != null)
         {
@@ -311,6 +347,30 @@ public class PlayingScreen : IScreen
             _ => _gruntSprite
         };
         _enemies.Add(EnemyFactory.Create(_drawer, e.EnemyType, e.Position, e.Velocity, _bulletManager, e.MovementPattern, spriteForType));
+    }
+
+    private void ActivateBomb()
+    {
+        _hudData.BombCount -= 1;
+        _bombVisualTimer = BombVisualDuration;
+        _bombInvulnerabilityTimer = BombInvulnerabilityDuration;
+
+        _bulletManager.ClearEnemyProjectiles();
+
+        foreach (var enemy in _enemies)
+        {
+            if (!enemy.IsAlive)
+            {
+                continue;
+            }
+
+            bool wasAlive = enemy.IsAlive;
+            enemy.TakeDamage(BombDamage);
+            if (wasAlive && !enemy.IsAlive)
+            {
+                _scoreManager.AddScore(100);
+            }
+        }
     }
 
     // helper used during Update for more accurate laser collision tests
