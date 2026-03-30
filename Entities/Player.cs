@@ -14,13 +14,15 @@ public sealed class Player : IGameEntity
     public Rectangle Bounds => new Rectangle((int)Position.X - 10, (int)Position.Y - 10, 20, 20);
     private readonly SimpleDrawer _drawer;
     private readonly InputState _input;
+    private readonly Texture2D _sprite;
 
     private bool _slowMode;
 
-    public Player(SimpleDrawer drawer, InputState input)
+    public Player(SimpleDrawer drawer, InputState input, Texture2D sprite)
     {
         _drawer = drawer;
         _input = input;
+        _sprite = sprite;
 
         Position = new Vector2(
             GameConfig.Playfield.Center.X,
@@ -61,9 +63,9 @@ public sealed class Player : IGameEntity
 
     public void Draw(SpriteBatch spriteBatch)
     {
-        // player body
-        var rect = new Rectangle((int)Position.X - 10, (int)Position.Y - 10, 20, 20);
-        _drawer.DrawRect(spriteBatch, rect, Color.White);
+        // Draw sprite centered on position
+        var destRect = new Rectangle((int)Position.X - _sprite.Width / 2, (int)Position.Y - _sprite.Height / 2, _sprite.Width, _sprite.Height);
+        spriteBatch.Draw(_sprite, destRect, Color.White);
 
         // indicator when slow mode is active
         if (_slowMode)

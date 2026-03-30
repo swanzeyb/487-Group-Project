@@ -33,8 +33,9 @@ public class Enemy:IGameEntity
     private IShootingStrategy _shootingStrategy;
     private BulletManager _bulletManager;
     private string _movementPattern;
+    private Texture2D _sprite;
 
-    public Enemy(SimpleDrawer drawer, EnemyType type, Vector2 startPos, Vector2 velocity, IShootingStrategy shootingStrategy, BulletManager bulletManager, string movementPattern = "linear")
+    public Enemy(SimpleDrawer drawer, EnemyType type, Vector2 startPos, Vector2 velocity, IShootingStrategy shootingStrategy, BulletManager bulletManager, string movementPattern = "linear", Texture2D sprite = null)
     {
         _drawer = drawer;
         _velocity = velocity;
@@ -43,28 +44,29 @@ public class Enemy:IGameEntity
         _shootingStrategy = shootingStrategy;
         _bulletManager = bulletManager;
         _movementPattern = movementPattern;
+        _sprite = sprite;
 
         // Switch case to give the enemy their color, size, and HP based on their type.
         switch (type)
         {
             case EnemyType.Grunt:
                 _color = Color.Blue;
-                _size = 16;
+                _size = 40;
                 _hp = 5;
                 break;
             case EnemyType.BetterGrunt:
                 _color = Color.Orange;
-                _size = 24;
+                _size = 48;
                 _hp = 10;
                 break;
             case EnemyType.MidBoss:
                 _color = Color.Purple;
-                _size = 60;
+                _size = 100;
                 _hp = 100;
                 break;
             case EnemyType.FinalBoss:
                 _color = Color.DarkRed;
-                _size = 120;
+                _size = 150;
                 _hp = 300;
                 break;
         }
@@ -121,7 +123,21 @@ public class Enemy:IGameEntity
 
     public void Draw(SpriteBatch spriteBatch)
     {
-        var rect = new Rectangle((int)Position.X - _size / 2, (int)Position.Y - _size, _size, _size);
-        _drawer.DrawRectOutline(spriteBatch, rect, 2, _color);
+        if (_sprite != null)
+        {
+            // Draw sprite centered on position
+            // For bosses, scale up the sprite
+            float scale = Type == EnemyType.FinalBoss ? 2.2f : (Type == EnemyType.MidBoss ? 1.5f : 1.0f);
+            int scaledWidth = (int)(_sprite.Width * scale);
+            int scaledHeight = (int)(_sprite.Height * scale);
+            var destRect = new Rectangle((int)Position.X - scaledWidth / 2, (int)Position.Y - scaledHeight / 2, scaledWidth, scaledHeight);
+            spriteBatch.Draw(_sprite, destRect, Color.White);
+        }
+        else
+        {
+            // Fallback to rectangle if no sprite
+            var rect = new Rectangle((int)Position.X - _size / 2, (int)Position.Y - _size, _size, _size);
+            _drawer.DrawRectOutline(spriteBatch, rect, 2, _color);
+        }
     }
 }

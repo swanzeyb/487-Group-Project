@@ -3,6 +3,8 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Core;
 using Screens;
+using System;
+using System.IO;
 
 namespace _487_Group_Project;
 
@@ -61,6 +63,13 @@ public class Game1 : Game
         var defaultFont = Content.Load<SpriteFont>("Fonts/DefaultFont");
         var titleFont = Content.Load<SpriteFont>("Fonts/TitleFont");
 
+        // Load sprite textures directly from file system
+        var playerSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/kenney_simple-space/PNG/Default/ship_L.png");
+        var gruntSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/kenney_simple-space/PNG/Default/enemy_A.png");
+        var betterGruntSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/kenney_simple-space/PNG/Default/enemy_D.png");
+        var midBossSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/kenney_simple-space/PNG/Default/satellite_B.png");
+        var finalBossSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/kenney_simple-space/PNG/Default/station_B.png");
+
         // Create screens
         _menuScreen = new MenuScreen(titleFont, defaultFont);
         _menuScreen.OnStartGame = () => TransitionTo(GameState.Playing);
@@ -71,7 +80,7 @@ public class Game1 : Game
         _testSelectionScreen = new TestSelectionScreen(titleFont, defaultFont);
         _testSelectionScreen.OnEnterGame = () => TransitionTo(GameState.Playing);
 
-        _playingScreen = new PlayingScreen(_drawer, _input, _keyBindings, _scoreManager, defaultFont);
+        _playingScreen = new PlayingScreen(_drawer, _input, _keyBindings, _scoreManager, defaultFont, playerSprite, gruntSprite, betterGruntSprite, midBossSprite, finalBossSprite);
         _playingScreen.OnPause = () => TransitionTo(GameState.Paused);
         _playingScreen.OnGameOver = () =>
         {
@@ -165,5 +174,18 @@ public class Game1 : Game
         _activeScreen.OnExit();
         _activeScreen = GetScreen(_keyConfigReturnState);
         _activeScreen.OnEnter();
+    }
+
+    private static Texture2D LoadTextureFromFile(GraphicsDevice graphicsDevice, string filePath)
+    {
+        if (!File.Exists(filePath))
+        {
+            throw new FileNotFoundException($"Sprite file not found: {filePath}");
+        }
+
+        using (var fileStream = new FileStream(filePath, FileMode.Open))
+        {
+            return Texture2D.FromStream(graphicsDevice, fileStream);
+        }
     }
 }
