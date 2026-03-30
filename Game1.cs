@@ -74,6 +74,8 @@ public class Game1 : Game
         var gruntBulletSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/Player Bullets/P1_Bullet_Pink.png");
         var betterGruntBulletSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/Player Bullets/p1_Bullet_Alt.png");
         var midBossBulletSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/Player Bullets/P1 Bullet_Yellow_Thinier.png");
+        var nebulaSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/kenney_simple-space/PNG/Default/effect_purple.png");
+        var meteorSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/kenney_simple-space/PNG/Default/meteor_detailedSmall.png");
 
         // Create screens
         _menuScreen = new MenuScreen(titleFont, defaultFont);
@@ -100,7 +102,9 @@ public class Game1 : Game
             playerBulletSprite,
             gruntBulletSprite,
             betterGruntBulletSprite,
-            midBossBulletSprite);
+            midBossBulletSprite,
+            nebulaSprite,
+            meteorSprite);
         _playingScreen.OnPause = () => TransitionTo(GameState.Paused);
         _playingScreen.OnGameOver = () =>
         {

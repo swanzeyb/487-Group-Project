@@ -13,6 +13,29 @@ namespace Screens;
 
 public class PlayingScreen : IScreen
 {
+    private sealed class BlueStar
+    {
+        public Vector2 Position;
+        public int Size;
+        public Color Tint;
+    }
+
+    private sealed class MeteorProjectile
+    {
+        public Vector2 Position;
+        public Vector2 Velocity;
+        public float Rotation;
+        public float RotationSpeed;
+        public float Scale;
+
+        public Rectangle Bounds(Texture2D sprite)
+        {
+            int w = (int)(sprite.Width * Scale);
+            int h = (int)(sprite.Height * Scale);
+            return new Rectangle((int)Position.X - w / 2, (int)Position.Y - h / 2, w, h);
+        }
+    }
+
     private readonly SimpleDrawer _drawer;
     private readonly InputState _input;
     private readonly KeyBindings _keyBindings;
@@ -29,6 +52,11 @@ public class PlayingScreen : IScreen
     private readonly Texture2D _gruntBulletSprite;
     private readonly Texture2D _betterGruntBulletSprite;
     private readonly Texture2D _midBossBulletSprite;
+    private readonly Texture2D _nebulaSprite;
+    private readonly Texture2D _meteorSprite;
+    private readonly Random _rng = new();
+    private readonly List<BlueStar> _blueStars = new();
+    private readonly List<MeteorProjectile> _meteors = new();
 
     private Player _player;
     private List<Enemy> _enemies = new();
@@ -43,6 +71,9 @@ public class PlayingScreen : IScreen
     private const float BombInvulnerabilityDuration = 0.75f;
     private const int StartingBombCount = 3;
     private const int BombDamage = 20;
+    private float _meteorSpawnTimer = 0f;
+    private const float MeteorSpawnInterval = 0.9f;
+    private const int MeteorDamage = 50;
 
     public Action OnPause;
     public Action OnGameOver;
@@ -58,7 +89,9 @@ public class PlayingScreen : IScreen
                          Texture2D playerBulletSprite,
                          Texture2D gruntBulletSprite,
                          Texture2D betterGruntBulletSprite,
-                         Texture2D midBossBulletSprite)
+                         Texture2D midBossBulletSprite,
+                         Texture2D nebulaSprite,
+                         Texture2D meteorSprite)
     {
         _drawer = drawer;
         _input = input;
@@ -75,6 +108,8 @@ public class PlayingScreen : IScreen
         _gruntBulletSprite = gruntBulletSprite;
         _betterGruntBulletSprite = betterGruntBulletSprite;
         _midBossBulletSprite = midBossBulletSprite;
+        _nebulaSprite = nebulaSprite;
+        _meteorSprite = meteorSprite;
     }
 
     public void OnEnter()
@@ -92,6 +127,9 @@ public class PlayingScreen : IScreen
         _hudData.BombCount = StartingBombCount;
         _bombVisualTimer = 0f;
         _bombInvulnerabilityTimer = 0f;
+        _meteorSpawnTimer = 0f;
+        _meteors.Clear();
+        InitializeBlueStars();
 
         if (GameConfig.IsDebugMode)
         {
@@ -173,6 +211,8 @@ public class PlayingScreen : IScreen
             ActivateBomb();
         }
 
+        UpdateMeteors(dt);
+
         if (!GameConfig.IsDebugMode)
         {
             int livingCount = _enemies.Count(e => e.IsAlive);
@@ -242,6 +282,21 @@ public class PlayingScreen : IScreen
             }
         }
 
+        for (int i = _meteors.Count - 1; i >= 0; i--)
+        {
+            if (_bombInvulnerabilityTimer <= 0f && _player.Bounds.Intersects(_meteors[i].Bounds(_meteorSprite)))
+            {
+                _player.TakeDamage(MeteorDamage);
+                _meteors.RemoveAt(i);
+
+                if (!_player.IsAlive)
+                {
+                    OnGameOver?.Invoke();
+                    return;
+                }
+            }
+        }
+
         // Update HUD data
         _hudData.Score = _scoreManager.Score;
         _hudData.PlayerHP = _player.HP;
@@ -283,6 +338,8 @@ public class PlayingScreen : IScreen
 
     public void Draw(SpriteBatch spriteBatch, SimpleDrawer drawer)
     {
+        DrawSpaceBackground(spriteBatch);
+
         _player.Draw(spriteBatch);
 
         // Draw enemies
@@ -293,6 +350,13 @@ public class PlayingScreen : IScreen
 
         // Draw bullets
         _bulletManager.Draw(spriteBatch);
+
+        foreach (var meteor in _meteors)
+        {
+            var dest = meteor.Bounds(_meteorSprite);
+            var origin = new Vector2(_meteorSprite.Width / 2f, _meteorSprite.Height / 2f);
+            spriteBatch.Draw(_meteorSprite, meteor.Position, null, Color.White, meteor.Rotation, origin, meteor.Scale, SpriteEffects.None, 0f);
+        }
 
         if (_bombVisualTimer > 0f)
         {
@@ -356,6 +420,7 @@ public class PlayingScreen : IScreen
         _bombInvulnerabilityTimer = BombInvulnerabilityDuration;
 
         _bulletManager.ClearEnemyProjectiles();
+        _meteors.Clear();
 
         foreach (var enemy in _enemies)
         {
@@ -371,6 +436,101 @@ public class PlayingScreen : IScreen
                 _scoreManager.AddScore(100);
             }
         }
+    }
+
+    private void DrawSpaceBackground(SpriteBatch spriteBatch)
+    {
+        _drawer.DrawRect(spriteBatch, GameConfig.Playfield, new Color(8, 10, 24));
+
+        foreach (var star in _blueStars)
+        {
+            _drawer.DrawRect(spriteBatch, new Rectangle((int)star.Position.X, (int)star.Position.Y, star.Size, star.Size), star.Tint);
+        }
+    }
+
+    private void InitializeBlueStars()
+    {
+        _blueStars.Clear();
+
+        const int starCount = 220;
+        for (int i = 0; i < starCount; i++)
+        {
+            int size = _rng.NextDouble() < 0.82 ? 1 : 2;
+            int alpha = _rng.Next(120, 220);
+            int blueBoost = _rng.Next(0, 30);
+            int greenBoost = _rng.Next(0, 18);
+
+            _blueStars.Add(new BlueStar
+            {
+                Position = new Vector2(
+                    _rng.Next(GameConfig.Playfield.Left, GameConfig.Playfield.Right),
+                    _rng.Next(GameConfig.Playfield.Top, GameConfig.Playfield.Bottom)),
+                Size = size,
+                Tint = new Color(110 + greenBoost, 170 + greenBoost, 230 + blueBoost, alpha)
+            });
+        }
+    }
+
+    private void UpdateMeteors(float dt)
+    {
+        bool meteorEnabled = IsMeteorPhase();
+        if (meteorEnabled)
+        {
+            _meteorSpawnTimer += dt;
+            if (_meteorSpawnTimer >= MeteorSpawnInterval)
+            {
+                _meteorSpawnTimer = 0f;
+                SpawnMeteor();
+            }
+        }
+        else
+        {
+            _meteorSpawnTimer = 0f;
+            if (_meteors.Count > 0)
+            {
+                _meteors.Clear();
+            }
+            return;
+        }
+
+        for (int i = _meteors.Count - 1; i >= 0; i--)
+        {
+            var meteor = _meteors[i];
+            meteor.Position += meteor.Velocity * dt;
+            meteor.Rotation += meteor.RotationSpeed * dt;
+            if (meteor.Position.Y > GameConfig.Playfield.Bottom + 80)
+            {
+                _meteors.RemoveAt(i);
+            }
+        }
+    }
+
+    private void SpawnMeteor()
+    {
+        float x = _rng.Next(GameConfig.Playfield.Left + 20, GameConfig.Playfield.Right - 20);
+        float y = GameConfig.Playfield.Top - 50;
+        float speedY = 210f + (float)_rng.NextDouble() * 120f;
+        float speedX = -45f + (float)_rng.NextDouble() * 90f;
+
+        _meteors.Add(new MeteorProjectile
+        {
+            Position = new Vector2(x, y),
+            Velocity = new Vector2(speedX, speedY),
+            Rotation = 0f,
+            RotationSpeed = -2.2f + (float)_rng.NextDouble() * 4.4f,
+            Scale = 0.55f + (float)_rng.NextDouble() * 0.5f
+        });
+    }
+
+    private bool IsMeteorPhase()
+    {
+        if (GameConfig.IsDebugMode)
+        {
+            return GameConfig.SelectedEnemyType == EnemyType.MidBoss || GameConfig.SelectedEnemyType == EnemyType.FinalBoss;
+        }
+
+        string phase = _hudData.PhaseName?.ToLowerInvariant() ?? string.Empty;
+        return phase.Contains("mid boss") || phase.Contains("final boss");
     }
 
     // helper used during Update for more accurate laser collision tests
