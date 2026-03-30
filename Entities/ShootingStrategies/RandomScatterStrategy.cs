@@ -30,7 +30,7 @@ public class RandomScatterStrategy : IShootingStrategy
                 float angle = (float)(_random.NextDouble() * Math.PI * 2);
                 Vector2 direction = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
                 Vector2 velocity = direction * 200f; // Speed
-                bulletManager.FireBullet(entityPosition, velocity, damage: _damage);
+                bulletManager.FireBullet(entityPosition, velocity, damage: _damage, visualType: BulletVisualType.Grunt);
             }
         }
     }

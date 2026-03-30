@@ -69,6 +69,13 @@ public class Game1 : Game
         var betterGruntSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/kenney_simple-space/PNG/Default/enemy_D.png");
         var midBossSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/kenney_simple-space/PNG/Default/satellite_B.png");
         var finalBossSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/kenney_simple-space/PNG/Default/station_B.png");
+        var panelBorderSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/kenney-ui-borders/PNG/Default/Border/panel-border-015.png");
+        var playerBulletSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/Player Bullets/P1_Hyper_Bullet.png");
+        var gruntBulletSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/Player Bullets/P1_Bullet_Pink.png");
+        var betterGruntBulletSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/Player Bullets/p1_Bullet_Alt.png");
+        var midBossBulletSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/Player Bullets/P1 Bullet_Yellow_Thinier.png");
+        var nebulaSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/kenney_simple-space/PNG/Default/effect_purple.png");
+        var meteorSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/kenney_simple-space/PNG/Default/meteor_detailedSmall.png");
 
         // Create screens
         _menuScreen = new MenuScreen(titleFont, defaultFont);
@@ -80,7 +87,24 @@ public class Game1 : Game
         _testSelectionScreen = new TestSelectionScreen(titleFont, defaultFont);
         _testSelectionScreen.OnEnterGame = () => TransitionTo(GameState.Playing);
 
-        _playingScreen = new PlayingScreen(_drawer, _input, _keyBindings, _scoreManager, defaultFont, playerSprite, gruntSprite, betterGruntSprite, midBossSprite, finalBossSprite);
+        _playingScreen = new PlayingScreen(
+            _drawer,
+            _input,
+            _keyBindings,
+            _scoreManager,
+            defaultFont,
+            playerSprite,
+            gruntSprite,
+            betterGruntSprite,
+            midBossSprite,
+            finalBossSprite,
+            panelBorderSprite,
+            playerBulletSprite,
+            gruntBulletSprite,
+            betterGruntBulletSprite,
+            midBossBulletSprite,
+            nebulaSprite,
+            meteorSprite);
         _playingScreen.OnPause = () => TransitionTo(GameState.Paused);
         _playingScreen.OnGameOver = () =>
         {
