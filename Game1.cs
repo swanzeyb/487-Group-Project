@@ -69,6 +69,7 @@ public class Game1 : Game
         var betterGruntSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/kenney_simple-space/PNG/Default/enemy_D.png");
         var midBossSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/kenney_simple-space/PNG/Default/satellite_B.png");
         var finalBossSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/kenney_simple-space/PNG/Default/station_B.png");
+        var panelBorderSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/kenney-ui-borders/PNG/Default/Border/panel-border-015.png");
 
         // Create screens
         _menuScreen = new MenuScreen(titleFont, defaultFont);
@@ -80,7 +81,7 @@ public class Game1 : Game
         _testSelectionScreen = new TestSelectionScreen(titleFont, defaultFont);
         _testSelectionScreen.OnEnterGame = () => TransitionTo(GameState.Playing);
 
-        _playingScreen = new PlayingScreen(_drawer, _input, _keyBindings, _scoreManager, defaultFont, playerSprite, gruntSprite, betterGruntSprite, midBossSprite, finalBossSprite);
+        _playingScreen = new PlayingScreen(_drawer, _input, _keyBindings, _scoreManager, defaultFont, playerSprite, gruntSprite, betterGruntSprite, midBossSprite, finalBossSprite, panelBorderSprite);
         _playingScreen.OnPause = () => TransitionTo(GameState.Paused);
         _playingScreen.OnGameOver = () =>
         {

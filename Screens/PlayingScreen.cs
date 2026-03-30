@@ -24,6 +24,7 @@ public class PlayingScreen : IScreen
     private readonly Texture2D _betterGruntSprite;
     private readonly Texture2D _midBossSprite;
     private readonly Texture2D _finalBossSprite;
+    private readonly Texture2D _panelBorderSprite;
 
     private Player _player;
     private List<Enemy> _enemies = new();
@@ -42,7 +43,8 @@ public class PlayingScreen : IScreen
     public PlayingScreen(SimpleDrawer drawer, InputState input, KeyBindings keyBindings,
                          ScoreManager scoreManager, SpriteFont defaultFont, 
                          Texture2D playerSprite, Texture2D gruntSprite, Texture2D betterGruntSprite,
-                         Texture2D midBossSprite, Texture2D finalBossSprite)
+                         Texture2D midBossSprite, Texture2D finalBossSprite,
+                         Texture2D panelBorderSprite)
     {
         _drawer = drawer;
         _input = input;
@@ -54,6 +56,7 @@ public class PlayingScreen : IScreen
         _betterGruntSprite = betterGruntSprite;
         _midBossSprite = midBossSprite;
         _finalBossSprite = finalBossSprite;
+        _panelBorderSprite = panelBorderSprite;
     }
 
     public void OnEnter()
@@ -232,10 +235,6 @@ public class PlayingScreen : IScreen
 
     public void Draw(SpriteBatch spriteBatch, SimpleDrawer drawer)
     {
-        // Draw playfield boundary
-        drawer.DrawRectOutline(spriteBatch, GameConfig.Playfield, thickness: 3, color: Color.DarkGray);
-
-        // Draw player
         _player.Draw(spriteBatch);
 
         // Draw enemies
@@ -247,8 +246,36 @@ public class PlayingScreen : IScreen
         // Draw bullets
         _bulletManager.Draw(spriteBatch);
 
-        // Draw HUD
+        // Draw playfield border from panel-border-015 using 9-slice to match original visuals
+        if (_panelBorderSprite != null)
+        {
+            DrawPlayfieldBorder(spriteBatch);
+        }
+        else
+        {
+            drawer.DrawRectOutline(spriteBatch, GameConfig.Playfield, thickness: 3, color: Color.DarkGray);
+        }
+
         _hudPanel.Draw(spriteBatch, _hudData);
+    }
+
+    private void DrawPlayfieldBorder(SpriteBatch spriteBatch)
+    {
+        const int borderPx = 2;
+        var src = _panelBorderSprite.Bounds;
+        var dst = GameConfig.Playfield;
+
+        // corners
+        spriteBatch.Draw(_panelBorderSprite, new Rectangle(dst.Left, dst.Top, borderPx, borderPx), new Rectangle(0, 0, borderPx, borderPx), Color.White);
+        spriteBatch.Draw(_panelBorderSprite, new Rectangle(dst.Right - borderPx, dst.Top, borderPx, borderPx), new Rectangle(src.Width - borderPx, 0, borderPx, borderPx), Color.White);
+        spriteBatch.Draw(_panelBorderSprite, new Rectangle(dst.Left, dst.Bottom - borderPx, borderPx, borderPx), new Rectangle(0, src.Height - borderPx, borderPx, borderPx), Color.White);
+        spriteBatch.Draw(_panelBorderSprite, new Rectangle(dst.Right - borderPx, dst.Bottom - borderPx, borderPx, borderPx), new Rectangle(src.Width - borderPx, src.Height - borderPx, borderPx, borderPx), Color.White);
+
+        // edges
+        spriteBatch.Draw(_panelBorderSprite, new Rectangle(dst.Left + borderPx, dst.Top, dst.Width - borderPx * 2, borderPx), new Rectangle(borderPx, 0, src.Width - borderPx * 2, borderPx), Color.White);
+        spriteBatch.Draw(_panelBorderSprite, new Rectangle(dst.Left + borderPx, dst.Bottom - borderPx, dst.Width - borderPx * 2, borderPx), new Rectangle(borderPx, src.Height - borderPx, src.Width - borderPx * 2, borderPx), Color.White);
+        spriteBatch.Draw(_panelBorderSprite, new Rectangle(dst.Left, dst.Top + borderPx, borderPx, dst.Height - borderPx * 2), new Rectangle(0, borderPx, borderPx, src.Height - borderPx * 2), Color.White);
+        spriteBatch.Draw(_panelBorderSprite, new Rectangle(dst.Right - borderPx, dst.Top + borderPx, borderPx, dst.Height - borderPx * 2), new Rectangle(src.Width - borderPx, borderPx, borderPx, src.Height - borderPx * 2), Color.White);
     }
 
     private void HandleSpawnEnemy(object sender, SpawnEnemyEventArgs e)
