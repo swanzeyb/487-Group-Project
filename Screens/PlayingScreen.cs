@@ -19,6 +19,12 @@ public class PlayingScreen : IScreen
     private readonly ScoreManager _scoreManager;
     private readonly HudPanel _hudPanel;
 
+    private readonly Texture2D _playerSprite;
+    private readonly Texture2D _gruntSprite;
+    private readonly Texture2D _betterGruntSprite;
+    private readonly Texture2D _midBossSprite;
+    private readonly Texture2D _finalBossSprite;
+
     private Player _player;
     private List<Enemy> _enemies = new();
     private BulletManager _bulletManager;
@@ -34,18 +40,25 @@ public class PlayingScreen : IScreen
     public int CurrentScore => _scoreManager.Score;
 
     public PlayingScreen(SimpleDrawer drawer, InputState input, KeyBindings keyBindings,
-                         ScoreManager scoreManager, SpriteFont defaultFont)
+                         ScoreManager scoreManager, SpriteFont defaultFont, 
+                         Texture2D playerSprite, Texture2D gruntSprite, Texture2D betterGruntSprite,
+                         Texture2D midBossSprite, Texture2D finalBossSprite)
     {
         _drawer = drawer;
         _input = input;
         _keyBindings = keyBindings;
         _scoreManager = scoreManager;
         _hudPanel = new HudPanel(defaultFont, drawer);
+        _playerSprite = playerSprite;
+        _gruntSprite = gruntSprite;
+        _betterGruntSprite = betterGruntSprite;
+        _midBossSprite = midBossSprite;
+        _finalBossSprite = finalBossSprite;
     }
 
     public void OnEnter()
     {
-        _player = new Player(_drawer, _input);
+        _player = new Player(_drawer, _input, _playerSprite);
         _enemies.Clear();
         _bulletManager = new BulletManager(_drawer);
         _scoreManager.Reset();
@@ -56,7 +69,17 @@ public class PlayingScreen : IScreen
             // Debug mode: spawn single enemy at center
             var enemyPos = new Vector2(GameConfig.Playfield.Center.X, GameConfig.Playfield.Top + 50);
             var enemyVel = new Vector2(0, 50); // Slow downward movement
-            _enemies.Add(EnemyFactory.Create(_drawer, GameConfig.SelectedEnemyType, enemyPos, enemyVel, _bulletManager));
+            
+            Texture2D debugSprite = GameConfig.SelectedEnemyType switch
+            {
+                EnemyType.Grunt => _gruntSprite,
+                EnemyType.BetterGrunt => _betterGruntSprite,
+                EnemyType.MidBoss => _midBossSprite,
+                EnemyType.FinalBoss => _finalBossSprite,
+                _ => _gruntSprite
+            };
+            
+            _enemies.Add(EnemyFactory.Create(_drawer, GameConfig.SelectedEnemyType, enemyPos, enemyVel, _bulletManager, "linear", debugSprite));
             _hudData.PhaseName = $"Debug: {GameConfig.SelectedEnemyType}";
         }
         else
@@ -230,7 +253,15 @@ public class PlayingScreen : IScreen
 
     private void HandleSpawnEnemy(object sender, SpawnEnemyEventArgs e)
     {
-        _enemies.Add(EnemyFactory.Create(_drawer, e.EnemyType, e.Position, e.Velocity, _bulletManager, e.MovementPattern));
+        Texture2D spriteForType = e.EnemyType switch
+        {
+            EnemyType.Grunt => _gruntSprite,
+            EnemyType.BetterGrunt => _betterGruntSprite,
+            EnemyType.MidBoss => _midBossSprite,
+            EnemyType.FinalBoss => _finalBossSprite,
+            _ => _gruntSprite
+        };
+        _enemies.Add(EnemyFactory.Create(_drawer, e.EnemyType, e.Position, e.Velocity, _bulletManager, e.MovementPattern, spriteForType));
     }
 
     // helper used during Update for more accurate laser collision tests

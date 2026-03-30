@@ -1,5 +1,6 @@
 using Core;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Entities.ShootingStrategies;
 
 namespace Entities;
@@ -10,7 +11,7 @@ namespace Entities;
 /// </summary>
 public static class EnemyFactory
 {
-    public static Enemy Create(SimpleDrawer drawer, EnemyType type, Vector2 position, Vector2 velocity, BulletManager bulletManager, string movementPattern = "linear")
+    public static Enemy Create(SimpleDrawer drawer, EnemyType type, Vector2 position, Vector2 velocity, BulletManager bulletManager, string movementPattern = "linear", Texture2D sprite = null)
     {
         IShootingStrategy strategy = type switch
         {
@@ -21,6 +22,6 @@ public static class EnemyFactory
             _ => new RandomScatterStrategy()
         };
 
-        return new Enemy(drawer, type, position, velocity, strategy, bulletManager, movementPattern);
+        return new Enemy(drawer, type, position, velocity, strategy, bulletManager, movementPattern, sprite);
     }
 }
