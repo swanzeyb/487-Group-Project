@@ -23,6 +23,7 @@ public class Enemy:IGameEntity
     public Vector2 Position { get; private set; }
     public EnemyType Type { get; private set; }
     public int HP => _hp;
+    public Rectangle Bounds => new Rectangle((int)Position.X - _size / 2, (int)Position.Y - _size, _size, _size);
 
     private int _hp;
     private Vector2 _velocity;
@@ -31,8 +32,9 @@ public class Enemy:IGameEntity
     private SimpleDrawer _drawer;
     private IShootingStrategy _shootingStrategy;
     private BulletManager _bulletManager;
+    private string _movementPattern;
 
-    public Enemy(SimpleDrawer drawer, EnemyType type, Vector2 startPos, Vector2 velocity, IShootingStrategy shootingStrategy, BulletManager bulletManager)
+    public Enemy(SimpleDrawer drawer, EnemyType type, Vector2 startPos, Vector2 velocity, IShootingStrategy shootingStrategy, BulletManager bulletManager, string movementPattern = "linear")
     {
         _drawer = drawer;
         _velocity = velocity;
@@ -40,6 +42,7 @@ public class Enemy:IGameEntity
         Position = startPos;
         _shootingStrategy = shootingStrategy;
         _bulletManager = bulletManager;
+        _movementPattern = movementPattern;
 
         // Switch case to give the enemy their color, size, and HP based on their type.
         switch (type)
@@ -57,12 +60,12 @@ public class Enemy:IGameEntity
             case EnemyType.MidBoss:
                 _color = Color.Purple;
                 _size = 60;
-                _hp = 50;
+                _hp = 100;
                 break;
             case EnemyType.FinalBoss:
                 _color = Color.DarkRed;
                 _size = 120;
-                _hp = 100;
+                _hp = 300;
                 break;
         }
     }
@@ -78,17 +81,42 @@ public class Enemy:IGameEntity
         float dt = (float)gametime.ElapsedGameTime.TotalSeconds;
         Position += _velocity * dt;
 
+        // Handle bouncing movement pattern for bosses
+        if (_movementPattern == "bounce")
+        {
+            // Bounce off left and right boundaries of playfield
+            if (Position.X - _size / 2 <= GameConfig.Playfield.Left)
+            {
+                Position = new Vector2(GameConfig.Playfield.Left + _size / 2, Position.Y);
+                _velocity.X = Math.Abs(_velocity.X); // Move right
+            }
+            else if (Position.X + _size / 2 >= GameConfig.Playfield.Right)
+            {
+                Position = new Vector2(GameConfig.Playfield.Right - _size / 2, Position.Y);
+                _velocity.X = -Math.Abs(_velocity.X); // Move left
+            }
+            
+            // Only kill if moving way out of bounds vertically
+            if (Position.Y > GameConfig.Playfield.Bottom + 200 ||
+                Position.Y < GameConfig.Playfield.Top - 200)
+            {
+                _hp = 0;
+            }
+        }
+        else
+        {
+            // Linear movement - kill if out of bounds
+            if (Position.Y > GameConfig.Playfield.Bottom + 100 ||
+                Position.Y < GameConfig.Playfield.Top - 100 ||
+                Position.X < GameConfig.Playfield.Left - 100 ||
+                Position.X > GameConfig.Playfield.Right + 100)
+            {
+                _hp = 0;
+            }
+        }
+
         // Update shooting strategy
         _shootingStrategy.Update(gametime, Position, playerPosition, _bulletManager);
-
-        // Enemies despawns if they move outside the playfield bounds.
-        if (Position.Y > GameConfig.Playfield.Bottom + 100 ||
-            Position.Y < GameConfig.Playfield.Top - 100 ||
-            Position.X < GameConfig.Playfield.Left - 100 ||
-            Position.X > GameConfig.Playfield.Right + 100)
-        {
-            _hp = 0; // Kill if out of bounds
-        }
     }
 
     public void Draw(SpriteBatch spriteBatch)

@@ -10,6 +10,7 @@ public class Bullet
     public Vector2 Position { get; set; }
     public Vector2 Velocity { get; set; }
     public int Damage { get; set; } = 1;
+    public bool IsPlayerFired { get; set; } = false;
     public Rectangle Bounds => new Rectangle((int)Position.X - 2, (int)Position.Y - 2, 4, 4);
 
     private readonly SimpleDrawer _drawer;

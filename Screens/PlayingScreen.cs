@@ -24,6 +24,8 @@ public class PlayingScreen : IScreen
     private BulletManager _bulletManager;
     private LevelManager _levelManager;
     private HudPanelData _hudData = new();
+    private float _timeSinceLastShot = 0f;
+    private const float PlayerFireRate = 0.1f; // 10 shots per second
 
     public Action OnPause;
     public Action OnGameOver;
@@ -88,6 +90,15 @@ public class PlayingScreen : IScreen
 
         _player.Update(gameTime, _player.Position);
 
+        // Handle player shooting (continuous fire)
+        _timeSinceLastShot += (float)gameTime.ElapsedGameTime.TotalSeconds;
+        if (input.Down(_keyBindings.GetKey("Shoot")) && _timeSinceLastShot >= PlayerFireRate)
+        {
+            var bulletVelocity = new Vector2(0, -500); // Shoot upward
+            _bulletManager.FireBullet(_player.Position, bulletVelocity, damage: 1, isPlayerFired: true);
+            _timeSinceLastShot = 0f;
+        }
+
         if (!GameConfig.IsDebugMode)
         {
             int livingCount = _enemies.Count(e => e.IsAlive);
@@ -106,15 +117,44 @@ public class PlayingScreen : IScreen
         // Update bullets
         _bulletManager.Update(gameTime);
 
-        // Check collisions between bullets and player
-        foreach (var bullet in _bulletManager.ActiveBullets)
+        // Check collisions between player bullets and enemies
+        foreach (var bullet in _bulletManager.ActiveBullets.ToList())
         {
-            if (_player.Bounds.Intersects(bullet.Bounds))
+            if (bullet.IsPlayerFired)
             {
-                // Player hit, for now just log or handle damage
-                // Since player has no HP yet, trigger game over instead
-                OnGameOver?.Invoke();
-                return;
+                foreach (var enemy in _enemies)
+                {
+                    if (enemy.IsAlive && enemy.Bounds.Intersects(bullet.Bounds))
+                    {
+                        enemy.TakeDamage(bullet.Damage);
+                        bullet.IsAlive = false;
+                        
+                        // Award points when enemy dies
+                        if (!enemy.IsAlive)
+                        {
+                            _scoreManager.AddScore(100); 
+                        }
+                        
+                        break; // Bullet hit, move to next bullet
+                    }
+                }
+            }
+        }
+
+        // Check collisions between bullets and player
+        foreach (var bullet in _bulletManager.ActiveBullets.ToList())
+        {
+            if (!bullet.IsPlayerFired && _player.Bounds.Intersects(bullet.Bounds))
+            {
+                // Player hit by enemy bullet
+                _player.TakeDamage(bullet.Damage);
+                bullet.IsAlive = false;
+                
+                if (!_player.IsAlive)
+                {
+                    OnGameOver?.Invoke();
+                    return;
+                }
             }
         }
 
@@ -130,6 +170,21 @@ public class PlayingScreen : IScreen
 
         // Update HUD data
         _hudData.Score = _scoreManager.Score;
+        _hudData.PlayerHP = _player.HP;
+        
+        // Update boss health bar if a boss is present
+        var boss = _enemies.FirstOrDefault(e => e.Type == EnemyType.MidBoss || e.Type == EnemyType.FinalBoss);
+        if (boss != null)
+        {
+            // Calculate max HP based on boss type
+            int maxHP = boss.Type == EnemyType.MidBoss ? 100 : 300;
+            _hudData.BossHealthPercent = boss.HP / (float)maxHP;
+        }
+        else
+        {
+            _hudData.BossHealthPercent = 1f;
+        }
+        
         if (!GameConfig.IsDebugMode)
         {
             _hudData.PhaseName = _levelManager.CurrentPhaseName;
@@ -175,7 +230,7 @@ public class PlayingScreen : IScreen
 
     private void HandleSpawnEnemy(object sender, SpawnEnemyEventArgs e)
     {
-        _enemies.Add(EnemyFactory.Create(_drawer, e.EnemyType, e.Position, e.Velocity, _bulletManager));
+        _enemies.Add(EnemyFactory.Create(_drawer, e.EnemyType, e.Position, e.Velocity, _bulletManager, e.MovementPattern));
     }
 
     // helper used during Update for more accurate laser collision tests

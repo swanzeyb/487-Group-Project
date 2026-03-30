@@ -133,14 +133,14 @@
           "count": 1,
           "spawnIntervalMs": 0,
           "startDelayMs": 1000,
-          "spawnXMin": 330,
-          "spawnXMax": 330,
-          "spawnY": -60,
-          "velocityX": 0,
-          "velocityY": 50,
+          "spawnXMin": 80,
+          "spawnXMax": 80,
+          "spawnY": 150,
+          "velocityX": 80,
+          "velocityY": 0,
           "advanceCondition": "allKilled",
           "advanceCooldownSec": 0,
-          "movementPattern": "linear"
+          "movementPattern": "bounce"
         }
       ]
     },
@@ -158,8 +158,8 @@
           "spawnY": -30,
           "velocityX": 0,
           "velocityY": 130,
-          "advanceCondition": "allKilled",
-          "advanceCooldownSec": 0,
+          "advanceCondition": "timer",
+          "advanceCooldownSec": 3.0,
           "movementPattern": "linear"
         },
         {
@@ -172,8 +172,8 @@
           "spawnY": -40,
           "velocityX": 0,
           "velocityY": 100,
-          "advanceCondition": "allKilled",
-          "advanceCooldownSec": 0,
+          "advanceCondition": "timer",
+          "advanceCooldownSec": 3.0,
           "movementPattern": "linear"
         },
         {
@@ -181,14 +181,14 @@
           "count": 1,
           "spawnIntervalMs": 0,
           "startDelayMs": 1500,
-          "spawnXMin": 330,
-          "spawnXMax": 330,
-          "spawnY": -120,
-          "velocityX": 0,
-          "velocityY": 25,
+          "spawnXMin": 80,
+          "spawnXMax": 80,
+          "spawnY": 120,
+          "velocityX": 60,
+          "velocityY": 0,
           "advanceCondition": "allKilled",
           "advanceCooldownSec": 0,
-          "movementPattern": "linear"
+          "movementPattern": "bounce"
         }
       ]
     }

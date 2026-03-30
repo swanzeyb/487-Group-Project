@@ -8,6 +8,12 @@ public class AutomaticFireStrategy : IShootingStrategy
     private float _timeSinceLastShot;
     private const float ShotInterval = 0.5f; // Shoot every 0.5 seconds
     private Vector2 _lastPlayerPosition;
+    private readonly int _damage;
+
+    public AutomaticFireStrategy(int damage = 1)
+    {
+        _damage = damage;
+    }
 
     public void Update(GameTime gameTime, Vector2 entityPosition, Vector2 playerPosition, BulletManager bulletManager)
     {
@@ -26,7 +32,7 @@ public class AutomaticFireStrategy : IShootingStrategy
                 direction.Normalize();
             }
             Vector2 velocity = direction * 300f; // Fast speed
-            bulletManager.FireBullet(entityPosition, velocity);
+            bulletManager.FireBullet(entityPosition, velocity, damage: _damage);
         }
     }
 }
