@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Entities;
+using Entities.Movement;
 using System.Linq;
 
 namespace Core;
@@ -32,7 +33,7 @@ public class BulletManager
         // Pre-populate the pool
         for (int i = 0; i < PoolSize; i++)
         {
-            var bullet = new Bullet(_drawer);
+            var bullet = new Bullet(_drawer, BulletMovementFactory.Create(BulletMovementType.Linear));
             bullet.IsAlive = false;
             _bullets.Add(bullet);
         }
@@ -43,11 +44,13 @@ public class BulletManager
         Vector2 velocity,
         int damage = 1,
         bool isPlayerFired = false,
-        BulletVisualType visualType = BulletVisualType.Grunt)
+        BulletVisualType visualType = BulletVisualType.Grunt,
+        BulletMovementType movementType = BulletMovementType.Linear)
     {
         var bullet = GetInactiveBullet();
         if (bullet != null)
         {
+            bullet.SetMovementStrategy(BulletMovementFactory.Create(movementType));
             bullet.Position = position;
             bullet.Velocity = velocity;
             bullet.Damage = damage;
