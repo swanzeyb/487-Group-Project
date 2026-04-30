@@ -65,10 +65,10 @@ public class Game1 : Game
 
         // Load sprite textures directly from file system
         var playerSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/kenney_simple-space/PNG/Default/ship_L.png");
-        var gruntSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/kenney_simple-space/PNG/Default/enemy_A.png");
-        var betterGruntSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/kenney_simple-space/PNG/Default/enemy_D.png");
-        var midBossSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/kenney_simple-space/PNG/Default/satellite_B.png");
-        var finalBossSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/kenney_simple-space/PNG/Default/station_B.png");
+        var gruntSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/kenney_simple-space/PNG/Retina/enemy_A.png");
+        var betterGruntSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/kenney_simple-space/PNG/Retina/enemy_D.png");
+        var midBossSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/kenney_simple-space/PNG/Retina/satellite_B.png");
+        var finalBossSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/kenney_simple-space/PNG/Retina/station_B.png");
         var panelBorderSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/kenney-ui-borders/PNG/Default/Border/panel-border-015.png");
         var playerBulletSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/Player Bullets/P1_Hyper_Bullet.png");
         var gruntBulletSprite = LoadTextureFromFile(GraphicsDevice, "Content/Sprites/Player Bullets/P1_Bullet_Pink.png");
