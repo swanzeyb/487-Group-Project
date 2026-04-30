@@ -23,8 +23,7 @@ public static class EnemyMovementFactory
             position += velocity * dt;
             ApplyHorizontalBounce(ref position, ref velocity, size);
 
-            shouldDespawn = position.Y > GameConfig.Playfield.Bottom + 100 ||
-                            position.Y < GameConfig.Playfield.Top - 100;
+            shouldDespawn = position.Y > GameConfig.Playfield.Bottom + 100 || position.Y < GameConfig.Playfield.Top - 100;
         }
     }
 
