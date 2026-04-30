@@ -95,6 +95,118 @@ public class EnemyMovementTests
         Assert.That(enemy.Position.X, Is.GreaterThan(220f));
     }
 
+    [Test]
+    public void Enemy_SinusoidalPattern_BouncesAtLeftBoundary()
+    {
+        var enemy = new Enemy(
+            null!,
+            EnemyType.Grunt,
+            new Vector2(45, 120),
+            new Vector2(0, 90),
+            new NoOpShootingStrategy(),
+            null!,
+            movementPattern: "sinusoidal");
+
+        enemy.Update(new GameTime(TimeSpan.FromSeconds(0.5), TimeSpan.FromSeconds(0.5)), Vector2.Zero);
+
+        Assert.That(enemy.Position.X, Is.GreaterThanOrEqualTo(GameConfig.Playfield.Left + 20f));
+        Assert.That(enemy.IsAlive, Is.True);
+    }
+
+    [Test]
+    public void Enemy_SinusoidalPattern_BouncesAtRightBoundary()
+    {
+        var enemy = new Enemy(
+            null!,
+            EnemyType.Grunt,
+            new Vector2(615, 120),
+            new Vector2(0, 90),
+            new NoOpShootingStrategy(),
+            null!,
+            movementPattern: "sinusoidal");
+
+        enemy.Update(new GameTime(TimeSpan.FromSeconds(0.5), TimeSpan.FromSeconds(0.5)), Vector2.Zero);
+
+        Assert.That(enemy.Position.X, Is.LessThanOrEqualTo(GameConfig.Playfield.Right - 20f));
+        Assert.That(enemy.IsAlive, Is.True);
+    }
+
+    [Test]
+    public void Enemy_SinusoidalPattern_StillDespawnsThroughBottom()
+    {
+        var enemy = new Enemy(
+            null!,
+            EnemyType.Grunt,
+            new Vector2(320, 505),
+            new Vector2(0, 220),
+            new NoOpShootingStrategy(),
+            null!,
+            movementPattern: "sinusoidal");
+
+        enemy.Update(new GameTime(TimeSpan.FromSeconds(1.0), TimeSpan.FromSeconds(1.0)), Vector2.Zero);
+
+        Assert.That(enemy.IsAlive, Is.False);
+    }
+
+    [Test]
+    public void Enemy_LinearPattern_BouncesAtRightBoundary_WithNonzeroVelocityX()
+    {
+        var enemy = new Enemy(
+            null!,
+            EnemyType.Grunt,
+            new Vector2(GameConfig.Playfield.Right - 22, 120),
+            new Vector2(200, 0),
+            new NoOpShootingStrategy(),
+            null!,
+            movementPattern: "linear");
+
+        enemy.Update(new GameTime(TimeSpan.FromSeconds(0.2), TimeSpan.FromSeconds(0.2)), Vector2.Zero);
+        float firstX = enemy.Position.X;
+        enemy.Update(new GameTime(TimeSpan.FromSeconds(0.2), TimeSpan.FromSeconds(0.2)), Vector2.Zero);
+        float secondX = enemy.Position.X;
+
+        Assert.That(firstX, Is.EqualTo(GameConfig.Playfield.Right - 20f).Within(0.001f));
+        Assert.That(secondX, Is.LessThan(firstX));
+    }
+
+    [Test]
+    public void Enemy_SinusoidalPattern_WithNonzeroVelocityX_DoesNotStickToRightBoundary()
+    {
+        var enemy = new Enemy(
+            null!,
+            EnemyType.MidBoss,
+            new Vector2(570, 200),
+            new Vector2(100, 0),
+            new NoOpShootingStrategy(),
+            null!,
+            movementPattern: "sinusoidal");
+
+        float rightLimit = GameConfig.Playfield.Right - 50f;
+        bool touchedRight = false;
+        bool movedAwayAfterTouch = false;
+
+        for (int i = 0; i < 24; i++)
+        {
+            enemy.Update(new GameTime(TimeSpan.FromSeconds(0.1), TimeSpan.FromSeconds(0.1)), Vector2.Zero);
+            Assert.That(enemy.Position.X, Is.LessThanOrEqualTo(rightLimit + 0.01f));
+            Assert.That(enemy.Position.X, Is.GreaterThanOrEqualTo(GameConfig.Playfield.Left + 50f - 0.01f));
+
+            if (Math.Abs(enemy.Position.X - rightLimit) <= 0.01f)
+            {
+                touchedRight = true;
+            }
+
+            if (touchedRight && enemy.Position.X < rightLimit - 1f)
+            {
+                movedAwayAfterTouch = true;
+                break;
+            }
+        }
+
+        Assert.That(touchedRight, Is.True);
+        Assert.That(movedAwayAfterTouch, Is.True);
+    }
+
     private sealed class NoOpShootingStrategy : IShootingStrategy
     {
         public void Update(GameTime gameTime, Vector2 enemyPosition, Vector2 playerPosition, BulletManager bulletManager)

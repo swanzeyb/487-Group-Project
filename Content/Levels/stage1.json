@@ -13,7 +13,7 @@
           "spawnXMax": 620,
           "spawnY": -30,
           "velocityX": 0,
-          "velocityY": 100,
+          "velocityY": 110,
           "advanceCondition": "timer",
           "advanceCooldownSec": 1.0,
           "movementPattern": "linear"
@@ -44,7 +44,7 @@
           "velocityY": 120,
           "advanceCondition": "timer",
           "advanceCooldownSec": 2.0,
-          "movementPattern": "linear"
+          "movementPattern": "sinusoidal"
         }
       ]
     },
@@ -140,7 +140,7 @@
           "velocityY": 0,
           "advanceCondition": "allKilled",
           "advanceCooldownSec": 0,
-          "movementPattern": "bounce"
+          "movementPattern": "linear"
         }
       ]
     },
@@ -188,7 +188,7 @@
           "velocityY": 0,
           "advanceCondition": "allKilled",
           "advanceCooldownSec": 0,
-          "movementPattern": "bounce"
+          "movementPattern": "linear"
         }
       ]
     }

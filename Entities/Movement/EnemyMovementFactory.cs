@@ -11,7 +11,6 @@ public static class EnemyMovementFactory
         string normalized = movementPattern?.Trim().ToLowerInvariant() ?? "linear";
         return normalized switch
         {
-            "bounce" => new BounceEnemyMovementStrategy(),
             "sinusoidal" => new SinusoidalEnemyMovementStrategy(),
             _ => new LinearEnemyMovementStrategy()
         };
@@ -22,33 +21,10 @@ public static class EnemyMovementFactory
         public void Update(ref Vector2 position, ref Vector2 velocity, int size, float dt, out bool shouldDespawn)
         {
             position += velocity * dt;
+            ApplyHorizontalBounce(ref position, ref velocity, size);
 
             shouldDespawn = position.Y > GameConfig.Playfield.Bottom + 100 ||
-                            position.Y < GameConfig.Playfield.Top - 100 ||
-                            position.X < GameConfig.Playfield.Left - 100 ||
-                            position.X > GameConfig.Playfield.Right + 100;
-        }
-    }
-
-    private sealed class BounceEnemyMovementStrategy : IEnemyMovementStrategy
-    {
-        public void Update(ref Vector2 position, ref Vector2 velocity, int size, float dt, out bool shouldDespawn)
-        {
-            position += velocity * dt;
-
-            if (position.X - size / 2 <= GameConfig.Playfield.Left)
-            {
-                position = new Vector2(GameConfig.Playfield.Left + size / 2f, position.Y);
-                velocity.X = (float)Math.Abs(velocity.X);
-            }
-            else if (position.X + size / 2 >= GameConfig.Playfield.Right)
-            {
-                position = new Vector2(GameConfig.Playfield.Right - size / 2f, position.Y);
-                velocity.X = -(float)Math.Abs(velocity.X);
-            }
-
-            shouldDespawn = position.Y > GameConfig.Playfield.Bottom + 200 ||
-                            position.Y < GameConfig.Playfield.Top - 200;
+                            position.Y < GameConfig.Playfield.Top - 100;
         }
     }
 
@@ -58,36 +34,62 @@ public static class EnemyMovementFactory
         private const float LateralAmplitude = 45f;
 
         private bool _initialized;
-        private float _elapsedSeconds;
-        private float _speed;
-        private Vector2 _origin;
-        private Vector2 _direction;
-        private Vector2 _perpendicular;
+        private float _phase;
+        private float _previousLateralOffset;
 
         public void Update(ref Vector2 position, ref Vector2 velocity, int size, float dt, out bool shouldDespawn)
         {
             if (!_initialized)
             {
                 _initialized = true;
-                _elapsedSeconds = 0f;
-                _origin = position;
-
-                _speed = velocity.Length();
-                _direction = _speed > 0.0001f ? Vector2.Normalize(velocity) : new Vector2(0f, 1f);
-                _perpendicular = new Vector2(-_direction.Y, _direction.X);
+                _phase = 0f;
+                _previousLateralOffset = 0f;
             }
 
-            _elapsedSeconds += dt;
+            Vector2 forward = velocity;
+            if (forward.LengthSquared() < 0.0001f)
+            {
+                forward = new Vector2(0f, 1f);
+            }
+            forward.Normalize();
+            Vector2 perpendicular = new Vector2(-forward.Y, forward.X);
 
-            float forwardDistance = _speed * _elapsedSeconds;
-            float lateralOffset = (float)Math.Sin(_elapsedSeconds * AngularFrequency) * LateralAmplitude;
+            _phase += dt * AngularFrequency;
+            float lateralOffset = (float)Math.Sin(_phase) * LateralAmplitude;
+            float lateralDelta = lateralOffset - _previousLateralOffset;
+            _previousLateralOffset = lateralOffset;
 
-            position = _origin + _direction * forwardDistance + _perpendicular * lateralOffset;
+            position += velocity * dt + perpendicular * lateralDelta;
+
+            bool bounced = ApplyHorizontalBounce(ref position, ref velocity, size);
+            if (bounced)
+            {
+                _phase = 0f;
+                _previousLateralOffset = 0f;
+            }
 
             shouldDespawn = position.Y > GameConfig.Playfield.Bottom + 100 ||
-                            position.Y < GameConfig.Playfield.Top - 100 ||
-                            position.X < GameConfig.Playfield.Left - 100 ||
-                            position.X > GameConfig.Playfield.Right + 100;
+                            position.Y < GameConfig.Playfield.Top - 100;
         }
+    }
+
+    private static bool ApplyHorizontalBounce(ref Vector2 position, ref Vector2 velocity, int size)
+    {
+        float halfSize = size / 2f;
+        if (position.X - halfSize <= GameConfig.Playfield.Left)
+        {
+            position = new Vector2(GameConfig.Playfield.Left + halfSize, position.Y);
+            velocity.X = (float)Math.Abs(velocity.X);
+            return true;
+        }
+
+        if (position.X + halfSize >= GameConfig.Playfield.Right)
+        {
+            position = new Vector2(GameConfig.Playfield.Right - halfSize, position.Y);
+            velocity.X = -(float)Math.Abs(velocity.X);
+            return true;
+        }
+
+        return false;
     }
 }
