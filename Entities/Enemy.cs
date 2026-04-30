@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Core;
+using Entities.Movement;
 
 namespace Entities;
 
@@ -31,19 +32,19 @@ public class Enemy:IGameEntity
     private int _size;
     private SimpleDrawer _drawer;
     private IShootingStrategy _shootingStrategy;
+    private IEnemyMovementStrategy _movementStrategy;
     private BulletManager _bulletManager;
-    private string _movementPattern;
     private Texture2D _sprite;
 
-    public Enemy(SimpleDrawer drawer, EnemyType type, Vector2 startPos, Vector2 velocity, IShootingStrategy shootingStrategy, BulletManager bulletManager, string movementPattern = "linear", Texture2D sprite = null)
+    public Enemy(SimpleDrawer drawer, EnemyType type, Vector2 startPos, Vector2 velocity, IShootingStrategy shootingStrategy, BulletManager bulletManager, string movementPattern = "linear", Texture2D sprite = null, IEnemyMovementStrategy movementStrategy = null)
     {
         _drawer = drawer;
         _velocity = velocity;
         Type = type;
         Position = startPos;
         _shootingStrategy = shootingStrategy;
+        _movementStrategy = movementStrategy ?? EnemyMovementFactory.Create(movementPattern);
         _bulletManager = bulletManager;
-        _movementPattern = movementPattern;
         _sprite = sprite;
 
         // Switch case to give the enemy their color, size, and HP based on their type.
@@ -81,40 +82,15 @@ public class Enemy:IGameEntity
     public void Update(GameTime gametime, Vector2 playerPosition)
     {
         float dt = (float)gametime.ElapsedGameTime.TotalSeconds;
-        Position += _velocity * dt;
+        Vector2 position = Position;
+        Vector2 velocity = _velocity;
+        _movementStrategy.Update(ref position, ref velocity, _size, dt, out bool shouldDespawn);
+        Position = position;
+        _velocity = velocity;
 
-        // Handle bouncing movement pattern for bosses
-        if (_movementPattern == "bounce")
+        if (shouldDespawn)
         {
-            // Bounce off left and right boundaries of playfield
-            if (Position.X - _size / 2 <= GameConfig.Playfield.Left)
-            {
-                Position = new Vector2(GameConfig.Playfield.Left + _size / 2, Position.Y);
-                _velocity.X = Math.Abs(_velocity.X); // Move right
-            }
-            else if (Position.X + _size / 2 >= GameConfig.Playfield.Right)
-            {
-                Position = new Vector2(GameConfig.Playfield.Right - _size / 2, Position.Y);
-                _velocity.X = -Math.Abs(_velocity.X); // Move left
-            }
-            
-            // Only kill if moving way out of bounds vertically
-            if (Position.Y > GameConfig.Playfield.Bottom + 200 ||
-                Position.Y < GameConfig.Playfield.Top - 200)
-            {
-                _hp = 0;
-            }
-        }
-        else
-        {
-            // Linear movement - kill if out of bounds
-            if (Position.Y > GameConfig.Playfield.Bottom + 100 ||
-                Position.Y < GameConfig.Playfield.Top - 100 ||
-                Position.X < GameConfig.Playfield.Left - 100 ||
-                Position.X > GameConfig.Playfield.Right + 100)
-            {
-                _hp = 0;
-            }
+            _hp = 0;
         }
 
         // Update shooting strategy

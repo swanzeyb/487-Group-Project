@@ -61,6 +61,7 @@ public class PlayingScreen : IScreen
     private Player _player;
     private List<Enemy> _enemies = new();
     private BulletManager _bulletManager;
+    private readonly CollisionManager _collisionManager = new();
     private LevelManager _levelManager;
     private HudPanelData _hudData = new();
     private float _timeSinceLastShot = 0f;
@@ -234,69 +235,62 @@ public class PlayingScreen : IScreen
         // Update bullets
         _bulletManager.Update(gameTime);
 
-        // Check collisions between player bullets and enemies
-        foreach (var bullet in _bulletManager.ActiveBullets.ToList())
-        {
-            if (bullet.IsPlayerFired)
+        _collisionManager.DetectPlayerBulletEnemyCollisions(
+            _bulletManager.ActiveBullets,
+            _enemies,
+            (bullet, enemy) =>
             {
-                foreach (var enemy in _enemies)
-                {
-                    if (enemy.IsAlive && enemy.Bounds.Intersects(bullet.Bounds))
-                    {
-                        enemy.TakeDamage(bullet.Damage);
-                        bullet.IsAlive = false;
-                        
-                        // Award points when enemy dies
-                        if (!enemy.IsAlive)
-                        {
-                            _scoreManager.AddScore(100); 
-                        }
-                        
-                        break; // Bullet hit, move to next bullet
-                    }
-                }
-            }
-        }
-
-        // Check collisions between bullets and player
-        foreach (var bullet in _bulletManager.ActiveBullets.ToList())
-        {
-            if (_bombInvulnerabilityTimer <= 0f && !bullet.IsPlayerFired && _player.Bounds.Intersects(bullet.Bounds))
-            {
-                // Player hit by enemy bullet
-                _player.TakeDamage(bullet.Damage);
+                enemy.TakeDamage(bullet.Damage);
                 bullet.IsAlive = false;
-                
-                if (!_player.IsAlive)
-                {
-                    OnGameOver?.Invoke();
-                    return;
-                }
-            }
-        }
 
-        // Check collisions between lasers and player (using distance-to-segment test)
-        foreach (var laser in _bulletManager.ActiveLasers)
+                if (!enemy.IsAlive)
+                {
+                    _scoreManager.AddScore(100);
+                }
+            });
+
+        if (_bombInvulnerabilityTimer <= 0f)
         {
-            if (_bombInvulnerabilityTimer <= 0f && laser.IsActive && LaserIntersectsPlayer(laser, _player.Bounds))
+            bool gameOverTriggered = false;
+
+            _collisionManager.DetectEnemyBulletPlayerCollisions(
+                _bulletManager.ActiveBullets,
+                _player,
+                bullet =>
+                {
+                    _player.TakeDamage(bullet.Damage);
+                    bullet.IsAlive = false;
+
+                    if (!_player.IsAlive)
+                    {
+                        gameOverTriggered = true;
+                    }
+                });
+
+            _collisionManager.DetectLaserPlayerCollisions(
+                _bulletManager.ActiveLasers,
+                _player.Bounds,
+                _ => gameOverTriggered = true);
+
+            _collisionManager.DetectProjectilePlayerCollisions(
+                _meteors.ToList(),
+                _player.Bounds,
+                meteor => meteor.Bounds(_meteorSprite),
+                meteor =>
+                {
+                    _player.TakeDamage(MeteorDamage);
+                    _meteors.Remove(meteor);
+
+                    if (!_player.IsAlive)
+                    {
+                        gameOverTriggered = true;
+                    }
+                });
+
+            if (gameOverTriggered)
             {
                 OnGameOver?.Invoke();
                 return;
-            }
-        }
-
-        for (int i = _meteors.Count - 1; i >= 0; i--)
-        {
-            if (_bombInvulnerabilityTimer <= 0f && _player.Bounds.Intersects(_meteors[i].Bounds(_meteorSprite)))
-            {
-                _player.TakeDamage(MeteorDamage);
-                _meteors.RemoveAt(i);
-
-                if (!_player.IsAlive)
-                {
-                    OnGameOver?.Invoke();
-                    return;
-                }
             }
         }
 
@@ -558,29 +552,6 @@ public class PlayingScreen : IScreen
 
         float scaledRate = PlayerFireRateBase - phaseIndex * PlayerFireRatePhaseStep;
         return Math.Max(PlayerFireRateMin, scaledRate);
-    }
-
-    // helper used during Update for more accurate laser collision tests
-    private static bool LaserIntersectsPlayer(Laser laser, Rectangle playerBounds)
-    {
-        // treat player as a circle for simplicity
-        Vector2 playerCenter = playerBounds.Center.ToVector2();
-        float playerRadius = Math.Min(playerBounds.Width, playerBounds.Height) / 2f;
-        Vector2 start = laser.StartPosition;
-        Vector2 end = laser.EndPosition;
-        Vector2 seg = end - start;
-        float lenSq = seg.LengthSquared();
-        if (lenSq < 0.0001f)
-        {
-            // degenerate segment, just compare to start point
-            return Vector2.Distance(playerCenter, start) <= Laser.BeamThickness / 2 + playerRadius;
-        }
-        // project player centre onto segment
-        float t = Vector2.Dot(playerCenter - start, seg) / lenSq;
-        t = MathHelper.Clamp(t, 0f, 1f);
-        Vector2 closest = start + seg * t;
-        float distance = Vector2.Distance(playerCenter, closest);
-        return distance <= Laser.BeamThickness / 2 + playerRadius;
     }
 
     private void HandlePhaseChanged(object sender, int newPhaseIndex)

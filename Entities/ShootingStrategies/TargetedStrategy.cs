@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Xna.Framework;
 using Core;
+using Entities.Movement;
 
 namespace Entities.ShootingStrategies;
 
@@ -30,7 +31,12 @@ public class TargetedStrategy : IShootingStrategy
                 direction.Normalize();
             }
             Vector2 velocity = direction * 250f; // Speed
-            bulletManager.FireBullet(entityPosition, velocity, damage: _damage, visualType: BulletVisualType.BetterGrunt);
+            bulletManager.FireBullet(
+                entityPosition,
+                velocity,
+                damage: _damage,
+                visualType: BulletVisualType.BetterGrunt,
+                movementType: BulletMovementType.Sinusoidal);
         }
     }
 }

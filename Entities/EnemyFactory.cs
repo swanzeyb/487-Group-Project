@@ -1,6 +1,7 @@
 using Core;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Entities.Movement;
 using Entities.ShootingStrategies;
 
 namespace Entities;
@@ -22,6 +23,8 @@ public static class EnemyFactory
             _ => new RandomScatterStrategy()
         };
 
-        return new Enemy(drawer, type, position, velocity, strategy, bulletManager, movementPattern, sprite);
+        IEnemyMovementStrategy enemyMovement = EnemyMovementFactory.Create(movementPattern);
+
+        return new Enemy(drawer, type, position, velocity, strategy, bulletManager, movementPattern, sprite, enemyMovement);
     }
 }
