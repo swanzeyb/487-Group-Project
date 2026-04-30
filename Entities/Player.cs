@@ -2,6 +2,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Core;
+using Entities.Movement;
 
 namespace Entities;
 
@@ -15,14 +16,16 @@ public sealed class Player : IGameEntity
     private readonly SimpleDrawer _drawer;
     private readonly InputState _input;
     private readonly Texture2D _sprite;
+    private readonly IPlayerMovementStrategy _movementStrategy;
 
     private bool _slowMode;
 
-    public Player(SimpleDrawer drawer, InputState input, Texture2D sprite)
+    public Player(SimpleDrawer drawer, InputState input, Texture2D sprite, IPlayerMovementStrategy movementStrategy = null)
     {
         _drawer = drawer;
         _input = input;
         _sprite = sprite;
+        _movementStrategy = movementStrategy ?? PlayerMovementFactory.CreateDefault();
 
         Position = new Vector2(
             GameConfig.Playfield.Center.X,
@@ -35,7 +38,6 @@ public sealed class Player : IGameEntity
         float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
         _slowMode = _input.Down(Keys.LeftShift);
-        float speed = _slowMode ? GameConfig.PlayerSpeedSlow : GameConfig.PlayerSpeedNormal;
 
         Vector2 move = Vector2.Zero;
         if (_input.Down(Keys.W) || _input.Down(Keys.Up)) move.Y -= 1;
@@ -44,15 +46,11 @@ public sealed class Player : IGameEntity
         if (_input.Down(Keys.D) || _input.Down(Keys.Right)) move.X += 1;
 
         if (move != Vector2.Zero)
+        {
             move.Normalize();
+        }
 
-        Position += move * speed * dt;
-
-        // confine player to playfield
-        Position = new Vector2(
-            MathHelper.Clamp(Position.X, GameConfig.Playfield.Left + 10, GameConfig.Playfield.Right - 10),
-            MathHelper.Clamp(Position.Y, GameConfig.Playfield.Top + 10, GameConfig.Playfield.Bottom - 10)
-        );
+        Position = _movementStrategy.GetNextPosition(Position, move, _slowMode, dt);
     }
 
     public void TakeDamage(int damage)
