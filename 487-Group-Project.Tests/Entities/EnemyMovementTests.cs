@@ -1,5 +1,6 @@
 using Core;
 using Entities;
+using Entities.Movement;
 using Microsoft.Xna.Framework;
 
 namespace _487_Group_Project.Tests.Entities;
@@ -205,6 +206,75 @@ public class EnemyMovementTests
 
         Assert.That(touchedRight, Is.True);
         Assert.That(movedAwayAfterTouch, Is.True);
+    }
+
+    [Test]
+    public void Enemy_CircularPattern_PositionChangesEachUpdate()
+    {
+        var enemy = new Enemy(
+            null!,
+            EnemyType.Grunt,
+            new Vector2(300, 200),
+            Vector2.Zero,
+            new NoOpShootingStrategy(),
+            null!,
+            movementPattern: "circular");
+
+        Vector2 first = enemy.Position;
+        enemy.Update(new GameTime(TimeSpan.FromSeconds(0.1), TimeSpan.FromSeconds(0.1)), Vector2.Zero);
+        Vector2 second = enemy.Position;
+        enemy.Update(new GameTime(TimeSpan.FromSeconds(0.1), TimeSpan.FromSeconds(0.1)), Vector2.Zero);
+        Vector2 third = enemy.Position;
+
+        Assert.That(second, Is.Not.EqualTo(first));
+        Assert.That(third, Is.Not.EqualTo(second));
+    }
+
+    [Test]
+    public void Enemy_CircularPattern_StaysWithinPlayfieldBounds()
+    {
+        var enemy = new Enemy(
+            null!,
+            EnemyType.Grunt,
+            new Vector2(300, 200),
+            Vector2.Zero,
+            new NoOpShootingStrategy(),
+            null!,
+            movementPattern: "circular");
+
+        for (int i = 0; i < 100; i++)
+        {
+            enemy.Update(new GameTime(TimeSpan.FromSeconds(0.05), TimeSpan.FromSeconds(0.05)), Vector2.Zero);
+            Assert.That(enemy.Position.X, Is.GreaterThan(GameConfig.Playfield.Left), $"X out of bounds at step {i}");
+            Assert.That(enemy.Position.X, Is.LessThan(GameConfig.Playfield.Right), $"X out of bounds at step {i}");
+            Assert.That(enemy.Position.Y, Is.GreaterThan(GameConfig.Playfield.Top), $"Y out of bounds at step {i}");
+            Assert.That(enemy.Position.Y, Is.LessThan(GameConfig.Playfield.Bottom), $"Y out of bounds at step {i}");
+        }
+    }
+
+    [Test]
+    public void Enemy_CircularPattern_NeverDespawns()
+    {
+        var enemy = new Enemy(
+            null!,
+            EnemyType.Grunt,
+            new Vector2(300, 200),
+            Vector2.Zero,
+            new NoOpShootingStrategy(),
+            null!,
+            movementPattern: "circular");
+
+        for (int i = 0; i < 200; i++)
+            enemy.Update(new GameTime(TimeSpan.FromSeconds(0.05), TimeSpan.FromSeconds(0.05)), Vector2.Zero);
+
+        Assert.That(enemy.IsAlive, Is.True);
+    }
+
+    [Test]
+    public void Enemy_CircularPattern_CaseInsensitive()
+    {
+        var strategy = EnemyMovementFactory.Create("Circular");
+        Assert.That(strategy, Is.Not.Null);
     }
 
     private sealed class NoOpShootingStrategy : IShootingStrategy

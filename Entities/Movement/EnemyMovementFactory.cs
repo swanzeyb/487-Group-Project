@@ -12,7 +12,8 @@ public static class EnemyMovementFactory
         return normalized switch
         {
             "sinusoidal" => new SinusoidalEnemyMovementStrategy(),
-            _ => new LinearEnemyMovementStrategy()
+            "circular"   => new CircularEnemyMovementStrategy(),
+            _            => new LinearEnemyMovementStrategy()
         };
     }
 
@@ -69,6 +70,44 @@ public static class EnemyMovementFactory
 
             shouldDespawn = position.Y > GameConfig.Playfield.Bottom + 100 ||
                             position.Y < GameConfig.Playfield.Top - 100;
+        }
+    }
+
+    private sealed class CircularEnemyMovementStrategy : IEnemyMovementStrategy
+    {
+        private const float Radius = 80f;
+        private const float AngularSpeed = 1.5f; // radians/sec (~4s per revolution)
+
+        private bool _initialized;
+        private Vector2 _center;
+        private float _angle;
+
+        public void Update(ref Vector2 position, ref Vector2 velocity, int size, float dt, out bool shouldDespawn)
+        {
+            if (!_initialized)
+            {
+                _initialized = true;
+                _center = position;
+                _angle = -(float)Math.PI / 2f; // start at top of circle
+            }
+
+            _angle += AngularSpeed * dt;
+
+            float halfSize = size / 2f;
+            float clampedCenterX = MathHelper.Clamp(
+                _center.X,
+                GameConfig.Playfield.Left  + Radius + halfSize,
+                GameConfig.Playfield.Right - Radius - halfSize);
+            float clampedCenterY = MathHelper.Clamp(
+                _center.Y,
+                GameConfig.Playfield.Top    + Radius + halfSize,
+                GameConfig.Playfield.Bottom - Radius - halfSize);
+
+            position = new Vector2(
+                clampedCenterX + Radius * (float)Math.Cos(_angle),
+                clampedCenterY + Radius * (float)Math.Sin(_angle));
+
+            shouldDespawn = false;
         }
     }
 
