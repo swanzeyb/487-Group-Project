@@ -12,19 +12,12 @@ namespace Entities;
 /// </summary>
 public static class EnemyFactory
 {
-    public static Enemy Create(SimpleDrawer drawer, EnemyType type, Vector2 position, Vector2 velocity, BulletManager bulletManager, string movementPattern = "linear", Texture2D sprite = null)
+    public static Enemy Create(SimpleDrawer drawer, EnemyType type, Vector2 position, Vector2 velocity,
+                               BulletManager bulletManager, string movementPattern = "linear",
+                               Texture2D sprite = null, string attackPattern = "")
     {
-        IShootingStrategy strategy = type switch
-        {
-            EnemyType.Grunt => new RandomScatterStrategy(damage: 5),
-            EnemyType.BetterGrunt => new TargetedStrategy(damage: 5),
-            EnemyType.MidBoss => new AutomaticFireStrategy(damage: 10),
-            EnemyType.FinalBoss => new LaserBeamStrategy(),
-            _ => new RandomScatterStrategy()
-        };
-
+        IShootingStrategy strategy = ShootingStrategyFactory.Create(attackPattern, type);
         IEnemyMovementStrategy enemyMovement = EnemyMovementFactory.Create(movementPattern);
-
         return new Enemy(drawer, type, position, velocity, strategy, bulletManager, movementPattern, sprite, enemyMovement);
     }
 }

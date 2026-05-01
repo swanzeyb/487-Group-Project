@@ -89,4 +89,12 @@ public class WaveDefinition
     /// </summary>
     [JsonPropertyName("movementPattern")]
     public string MovementPattern { get; set; } = "linear";
+
+    /// <summary>
+    /// Attack pattern for this wave's enemies.
+    /// Values: "randomscatter", "targeted", "automatic", "laser".
+    /// Empty string falls back to the per-EnemyType default in ShootingStrategyFactory.
+    /// </summary>
+    [JsonPropertyName("attackPattern")]
+    public string AttackPattern { get; set; } = "";
 }

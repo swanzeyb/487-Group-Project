@@ -407,7 +407,7 @@ public class PlayingScreen : IScreen
             EnemyType.FinalBoss => _finalBossSprite,
             _ => _gruntSprite
         };
-        _enemies.Add(EnemyFactory.Create(_drawer, e.EnemyType, e.Position, e.Velocity, _bulletManager, e.MovementPattern, spriteForType));
+        _enemies.Add(EnemyFactory.Create(_drawer, e.EnemyType, e.Position, e.Velocity, _bulletManager, e.MovementPattern, spriteForType, e.AttackPattern));
     }
 
     private void ActivateBomb()

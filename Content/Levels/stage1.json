@@ -16,7 +16,8 @@
           "velocityY": 110,
           "advanceCondition": "timer",
           "advanceCooldownSec": 1.0,
-          "movementPattern": "linear"
+          "movementPattern": "circular",
+          "attackPattern": "randomscatter"
         },
         {
           "enemyType": "Grunt",
@@ -30,7 +31,8 @@
           "velocityY": 110,
           "advanceCondition": "timer",
           "advanceCooldownSec": 1.0,
-          "movementPattern": "linear"
+          "movementPattern": "linear",
+          "attackPattern": "randomscatter"
         },
         {
           "enemyType": "Grunt",
@@ -44,7 +46,8 @@
           "velocityY": 120,
           "advanceCondition": "timer",
           "advanceCooldownSec": 2.0,
-          "movementPattern": "sinusoidal"
+          "movementPattern": "sinusoidal",
+          "attackPattern": "randomscatter"
         }
       ]
     },
@@ -64,7 +67,8 @@
           "velocityY": 110,
           "advanceCondition": "timer",
           "advanceCooldownSec": 0.5,
-          "movementPattern": "linear"
+          "movementPattern": "linear",
+          "attackPattern": "randomscatter"
         },
         {
           "enemyType": "BetterGrunt",
@@ -78,7 +82,8 @@
           "velocityY": 90,
           "advanceCondition": "timer",
           "advanceCooldownSec": 1.0,
-          "movementPattern": "linear"
+          "movementPattern": "linear",
+          "attackPattern": "targeted"
         },
         {
           "enemyType": "Grunt",
@@ -92,7 +97,8 @@
           "velocityY": 120,
           "advanceCondition": "timer",
           "advanceCooldownSec": 0.5,
-          "movementPattern": "linear"
+          "movementPattern": "linear",
+          "attackPattern": "randomscatter"
         },
         {
           "enemyType": "BetterGrunt",
@@ -106,7 +112,8 @@
           "velocityY": 95,
           "advanceCondition": "timer",
           "advanceCooldownSec": 2.0,
-          "movementPattern": "linear"
+          "movementPattern": "linear",
+          "attackPattern": "targeted"
         }
       ]
     },
@@ -126,7 +133,8 @@
           "velocityY": 110,
           "advanceCondition": "allKilled",
           "advanceCooldownSec": 0,
-          "movementPattern": "linear"
+          "movementPattern": "circular",
+          "attackPattern": "randomscatter"
         },
         {
           "enemyType": "MidBoss",
@@ -140,7 +148,8 @@
           "velocityY": 0,
           "advanceCondition": "allKilled",
           "advanceCooldownSec": 0,
-          "movementPattern": "linear"
+          "movementPattern": "linear",
+          "attackPattern": "automatic"
         }
       ]
     },
@@ -160,7 +169,8 @@
           "velocityY": 130,
           "advanceCondition": "timer",
           "advanceCooldownSec": 3.0,
-          "movementPattern": "linear"
+          "movementPattern": "linear",
+          "attackPattern": "randomscatter"
         },
         {
           "enemyType": "BetterGrunt",
@@ -174,7 +184,8 @@
           "velocityY": 100,
           "advanceCondition": "timer",
           "advanceCooldownSec": 3.0,
-          "movementPattern": "linear"
+          "movementPattern": "linear",
+          "attackPattern": "targeted"
         },
         {
           "enemyType": "FinalBoss",
@@ -188,7 +199,8 @@
           "velocityY": 0,
           "advanceCondition": "allKilled",
           "advanceCooldownSec": 0,
-          "movementPattern": "linear"
+          "movementPattern": "linear",
+          "attackPattern": "laser"
         }
       ]
     }

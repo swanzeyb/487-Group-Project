@@ -18,13 +18,16 @@ public class SpawnEnemyEventArgs : EventArgs
     public Vector2 Position { get; }
     public Vector2 Velocity { get; }
     public string MovementPattern { get; }
+    public string AttackPattern { get; }
 
-    public SpawnEnemyEventArgs(EnemyType type, Vector2 position, Vector2 velocity, string movementPattern)
+    public SpawnEnemyEventArgs(EnemyType type, Vector2 position, Vector2 velocity,
+                               string movementPattern, string attackPattern)
     {
         EnemyType = type;
         Position = position;
         Velocity = velocity;
         MovementPattern = movementPattern;
+        AttackPattern = attackPattern;
     }
 }
 
@@ -198,7 +201,7 @@ public class LevelManager
         var vel = new Vector2(wave.VelocityX, wave.VelocityY);
 
         _waveSpawnedCount++;
-        OnSpawnEnemy?.Invoke(this, new SpawnEnemyEventArgs(type, pos, vel, wave.MovementPattern));
+        OnSpawnEnemy?.Invoke(this, new SpawnEnemyEventArgs(type, pos, vel, wave.MovementPattern, wave.AttackPattern));
     }
 
     private void ResetWaveState()
