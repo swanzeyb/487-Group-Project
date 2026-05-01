@@ -1,30 +1,54 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Screens;
 
 public class TestSelectionLogic
 {
-    public IReadOnlyList<MenuItem> Items { get; }
-    public int SelectedIndex { get; private set; }
+    public static readonly IReadOnlyList<string> EnemyTypes =
+        new[] { "Grunt", "BetterGrunt", "MidBoss", "FinalBoss" };
 
-    public TestSelectionLogic(List<MenuItem> items)
+    public static readonly IReadOnlyList<string> MovementPatterns =
+        new[] { "linear", "sinusoidal", "circular" };
+
+    public static readonly IReadOnlyList<string> AttackPatterns =
+        new[] { "default", "randomscatter", "targeted", "automatic", "laser" };
+
+    // Row 0 = EnemyType, 1 = Movement, 2 = Attack, 3 = EnterGame
+    public int FocusedRow { get; private set; } = 0;
+
+    public int EnemyTypeIndex { get; private set; } = 0;
+    public int MovementIndex  { get; private set; } = 0;
+    public int AttackIndex    { get; private set; } = 0;
+
+    public string SelectedEnemyType => EnemyTypes[EnemyTypeIndex];
+    public string SelectedMovement  => MovementPatterns[MovementIndex];
+    public string SelectedAttack    => AttackPatterns[AttackIndex];
+
+    private const int TotalRows = 4;
+
+    public void MoveUp()   => FocusedRow = (FocusedRow - 1 + TotalRows) % TotalRows;
+    public void MoveDown() => FocusedRow = (FocusedRow + 1) % TotalRows;
+
+    public void CycleLeft()
     {
-        Items = items.AsReadOnly();
-        SelectedIndex = 0;
+        switch (FocusedRow)
+        {
+            case 0: EnemyTypeIndex = (EnemyTypeIndex - 1 + EnemyTypes.Count)       % EnemyTypes.Count;       break;
+            case 1: MovementIndex  = (MovementIndex  - 1 + MovementPatterns.Count) % MovementPatterns.Count; break;
+            case 2: AttackIndex    = (AttackIndex    - 1 + AttackPatterns.Count)   % AttackPatterns.Count;   break;
+        }
     }
 
-    public void MoveDown()
+    public void CycleRight()
     {
-        SelectedIndex = (SelectedIndex + 1) % Items.Count;
+        switch (FocusedRow)
+        {
+            case 0: EnemyTypeIndex = (EnemyTypeIndex + 1) % EnemyTypes.Count;       break;
+            case 1: MovementIndex  = (MovementIndex  + 1) % MovementPatterns.Count; break;
+            case 2: AttackIndex    = (AttackIndex    + 1) % AttackPatterns.Count;   break;
+        }
     }
 
-    public void MoveUp()
-    {
-        SelectedIndex = (SelectedIndex - 1 + Items.Count) % Items.Count;
-    }
-
-    public string Confirm()
-    {
-        return Items[SelectedIndex].Action;
-    }
+    /// <returns>true when the user confirms on the EnterGame row.</returns>
+    public bool Confirm() => FocusedRow == 3;
 }

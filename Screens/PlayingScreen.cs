@@ -149,8 +149,10 @@ public class PlayingScreen : IScreen
                 _ => _gruntSprite
             };
             
-            _enemies.Add(EnemyFactory.Create(_drawer, GameConfig.SelectedEnemyType, enemyPos, enemyVel, _bulletManager, "linear", debugSprite));
-            _hudData.PhaseName = $"Debug: {GameConfig.SelectedEnemyType}";
+            _enemies.Add(EnemyFactory.Create(_drawer, GameConfig.SelectedEnemyType, enemyPos, enemyVel,
+                _bulletManager, GameConfig.SelectedMovementPattern, debugSprite, GameConfig.SelectedAttackPattern));
+            string attackLabel = string.IsNullOrEmpty(GameConfig.SelectedAttackPattern) ? "default" : GameConfig.SelectedAttackPattern;
+            _hudData.PhaseName = $"Debug: {GameConfig.SelectedEnemyType} | {GameConfig.SelectedMovementPattern} | {attackLabel}";
         }
         else
         {

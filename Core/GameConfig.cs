@@ -28,4 +28,6 @@ public static class GameConfig
     // Debug/Test Mode settings
     public static bool IsDebugMode { get; set; } = false;
     public static EnemyType SelectedEnemyType { get; set; } = EnemyType.Grunt;
+    public static string SelectedMovementPattern { get; set; } = "linear";
+    public static string SelectedAttackPattern { get; set; } = "";
 }
